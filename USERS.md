@@ -9,6 +9,40 @@ the knowledge graph but do not use the system directly in this scope.
 
 ---
 
+## How the user interfaces with the solution
+
+Yes — there is a **client app** on the coach's device and a **separate backend**;
+they are distinct tiers that talk over the network. See
+[`ARCHITECTURE.md`](ARCHITECTURE.md) for the full topology.
+
+```text
+   Coach's device                          Server (Docker Compose)
+ ┌────────────────┐                ┌──────────────────────────────────────┐
+ │  Frontend      │   HTTPS/JSON   │  API (FastAPI)                        │
+ │  client app    │ ─────────────▶ │   ↳ orchestration (LangGraph)         │
+ │  (Expo / RN    │ ◀───────────── │   ↳ retriever · LLM · safety · explain│
+ │   Web build)   │    responses   │   ↳ Neo4j (graph + vector)            │
+ └────────────────┘                └──────────────────────────────────────┘
+```
+
+- **Client (what the coach touches):** a React Native + Expo app. For this
+  submission the demo runs as the **React Native Web build in a browser**; the
+  same codebase can later target native iOS/Android. The client only renders the
+  UI and calls the backend — it holds no graph, no model, and no safety logic.
+- **Backend (where the work happens):** a separate FastAPI service that owns
+  orchestration, GraphRAG retrieval, LLM calls, the deterministic safety
+  validator, explanation building, and the Neo4j datastore. All reasoning and
+  every safety guarantee live here, never on the client.
+- **The boundary between them:** typed REST endpoints over JSON (PRD §7.9). The
+  coach selects a member and asks a question in the client; the client sends the
+  request to the backend; the backend returns the workout, safety result, and
+  graph-grounded explanation for the client to display.
+
+This separation is why the same backend could serve a web app today and a native
+mobile app later without changing how recommendations are produced.
+
+---
+
 ## Primary user: the fitness coach
 
 A coach managing multiple members who needs to program safe, personalized
