@@ -54,6 +54,28 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P1-T5 (Deterministic injury-filter / contraindication module)
+
+- **All safety computed in Cypher, never the LLM** (ARCH §1, PRD §10). The core
+  query is the `Member→Injury→Joint←Exercise` traversal; an exercise loading any
+  affected joint is contraindicated.
+- **Contraindicated results carry the offending joint(s)** (`affected_joints`) so
+  the explanation builder (P3-T3) can say *why* without re-querying.
+- **Equipment filter** flags any exercise that requires ≥1 piece of equipment the
+  member can't access (bodyweight exercises with no equipment are always available).
+- **`safe_exercise_candidates`** returns the set that is neither contraindicated nor
+  equipment-blocked, ordered by `priority_tier` then name — the candidate pool the
+  generator/repair (P3) draws from. Uses `NOT EXISTS { ... }` subqueries for both filters.
+- **Validation (live):** for Maya — contraindicated set = **21** and **equals** the
+  knee-loading set exactly (set equality); affected joint `[knee]`; 36 exercises need
+  unavailable equipment; **9** safe candidates, which exclude every contraindicated
+  and every equipment-blocked exercise. The partition is exhaustive (9 + |contra ∪
+  unavail|=41 = 50). `is_contraindicated` returns True for a knee exercise and False
+  for a safe one.
+- **Note for Phase 3:** only 9 safe candidates for Maya — exactly the "few valid
+  options" case PRD §7.6/§10 says the generator must recover from gracefully rather
+  than hallucinate. Good stress case for P3-T2/P3-T4.
+
 ## 2026-06-02 — P1-T4 (Unstructured signal structuring)
 
 - **Deterministic extraction, not LLM.** A small keyword lexicon maps free text to

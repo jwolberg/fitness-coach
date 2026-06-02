@@ -657,3 +657,95 @@
 - **Updated ticket status:** P1-T4 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P1-T5
+
+---
+---
+
+# Implementation — P1-T5
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket (completes Phase 1).
+- **Related phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Related ticket(s):** **P1-T5 — Deterministic injury-filter (contraindication) module**
+
+## Approach
+- **High-level strategy:** Package the `Member→Injury→Joint←Exercise` traversal (and
+  equipment filtering) as reusable, deterministic, in-graph functions.
+- **Key decisions:**
+  - All filtering in Cypher (no LLM); contraindicated results include the offending joints.
+  - Equipment filter flags exercises needing any unavailable equipment.
+  - `safe_exercise_candidates` returns the clean set, ordered by priority tier.
+- **Assumptions:** Member equipment via `HAS_EQUIPMENT_ACCESS` (P1-T3); exercise edges (P1-T2).
+
+---
+
+## Implementation Plan
+1. `app/safety/__init__.py` + `app/safety/validator.py`.
+2. Functions: `contraindicated_exercises`, `contraindicated_exercise_ids`,
+   `exercises_requiring_unavailable_equipment`, `safe_exercise_candidates`, `is_contraindicated`.
+3. Validate live against Maya.
+
+**Files created:** `app/safety/__init__.py`, `app/safety/validator.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/safety/validator.py
+- **Change summary:** Deterministic contraindication core. `_CONTRAINDICATED`
+  traverses Member→Injury→Joint←Exercise (returns offending joints);
+  `_UNAVAILABLE_EQUIPMENT` and `_SAFE_CANDIDATES` use `NOT EXISTS {}` subqueries;
+  Python wrappers expose ids/sets/lists + `is_contraindicated`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** For an injured-knee member, all knee-loading exercises are flagged
+  contraindicated; computed in-graph, not by LLM (PRD §7.7, §10; ARCH §1, §4).
+  - **Implementation:** `contraindicated_exercises('maya')` returns exactly the
+    knee-loading set via Cypher.
+  - **File(s):** `backend/app/safety/validator.py`.
+  - **Verification status:** **Verified live** (set equality with the knee-loading set).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P1-T5 — Deterministic injury-filter (contraindication) module
+  - **Status:** Complete
+  - **What was completed:** Contraindication + equipment filtering + safe-candidate
+    set, deterministic and in-graph, verified live.
+  - **Remaining work:** None. **Phase 1 exit criteria met.**
+
+---
+
+## Validation
+- **Live (Maya):** contraindicated = **21**, **equals** the knee-loading set (set
+  equality True); `affected_joints=[knee]`; 36 exercises need unavailable equipment;
+  **9** safe candidates excluding all contraindicated + equipment-blocked; exhaustive
+  partition (9 + 41 = 50); `is_contraindicated` True for a knee exercise, False for a safe one.
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** Only 9 safe candidates for Maya — the generator (P3) must
+  recover gracefully from a thin candidate pool (PRD §7.6/§10).
+- **Unresolved edge cases:** "explicitly marked safe/modified" exceptions (PRD §10)
+  not yet modeled; can extend later if needed.
+- **Blockers:** None.
+
+---
+
+## Phase 1 Exit Criteria (met)
+Graph schema + constraints applied; `exercises.json` (50) and Maya ingested;
+unstructured signal produces structured nodes/edges; a deterministic query returns
+the contraindicated-exercise set for the injured member. ✔ All verified live.
+
+---
+
+## BUILD_PLAN Update (P1-T5)
+- **Current phase:** Phase 2 — GraphRAG Retrieval
+- **Current ticket:** P2-T1 — Embedder adapter + embedding of graph nodes (next)
+- **Updated ticket status:** P1-T5 → Complete (Phase 1 Complete)
+- **Any blockers:** None
+- **Recommended next ticket:** P2-T1

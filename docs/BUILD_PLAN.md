@@ -98,12 +98,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
 - **Overall status:** In Progress
-- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
-- **Current ticket:** P1-T5 (Complete: P0-T1, P0-T2, P1-T1, P1-T2, P1-T3, P1-T4)
+- **Current phase:** Phase 2 — GraphRAG Retrieval
+- **Current ticket:** P2-T1 (Phase 0 & Phase 1 Complete)
 - **Blockers:** None. All shipped tickets verified live against `neo4j:5.26-community`.
-  Maya ingested; her chat signal is structured (links to the existing knee injury +
-  lower-body goal); the `Member→Injury→Joint←Exercise` traversal returns 21
-  contraindicated (knee-loading) exercises.
+  Phase 1 done: schema/constraints/vector index; 50 exercises + Maya ingested; chat
+  signal structured; deterministic injury filter returns exactly the 21
+  contraindicated (knee-loading) exercises and a 9-exercise safe-candidate set.
 
 ---
 
@@ -209,7 +209,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     contraindicated; computed in-graph, not by LLM (PRD §7.7, §10; ARCH §1, §4;
     challenge "Generation"/"Safety").
   - Commit: one commit referencing P1-T5.
-  - Status: Todo
+  - Status: Complete (verified live: contraindicated set == knee-loading set exactly
+    (21); equipment filter flags 36; 9 safe candidates; all in Cypher, not LLM)
 
 ---
 
@@ -437,12 +438,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P1-T5 — Deterministic injury-filter (contraindication) module.
-- **Why this is next:** All Phase 1 ingestion is done and the
-  `Member→Injury→Joint←Exercise` data path is proven (21 knee exercises resolve).
-  P1-T5 packages that traversal as a reusable, deterministic function (plus equipment
-  filtering) in `app/safety/validator.py` — the core safety guarantee that retrieval
-  (P2-T2) and the safety validator (P3-T2) both build on.
+- **Start with:** P2-T1 — Embedder adapter + embedding of graph nodes.
+- **Why this is next:** Phase 1 is complete — the graph is populated and the
+  deterministic injury filter works. Phase 2 adds the semantic half of GraphRAG:
+  P2-T1 introduces a provider/local `Embedder` adapter and writes embeddings onto the
+  `:Embeddable` nodes (signals, injuries, goals, exercises) into the vector index, so
+  P2-T2's retriever can combine vector search with the graph traversal.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
