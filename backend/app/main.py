@@ -12,8 +12,10 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
+from app.config import get_settings
 from app.graph.client import close_driver, session
 from app.graph.schema import apply_schema
 
@@ -54,4 +56,16 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Knowledge Graph Coaching Platform API", lifespan=lifespan)
+
+# CORS so the browser frontend (Expo RN Web, a different origin) can call the API.
+# Demo uses synthetic data and no auth, so a permissive default is fine; override
+# with CORS_ALLOW_ORIGINS (comma-separated) to restrict.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().cors_allow_origins,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(router)

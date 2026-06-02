@@ -54,6 +54,26 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P4-T1 (Expo / RN Web scaffold + API client)
+
+- **Scaffolded with `create-expo-app` blank-typescript** (Expo SDK 56, React 19, RN
+  0.85) + web deps (`react-dom`, `react-native-web`, `@expo/metro-runtime`). Removed
+  the template's stub `CLAUDE.md`/`AGENTS.md`/`.claude` to avoid nesting noise.
+- **Typed API client** (`src/api/client.ts` + `types.ts`) mirrors the backend §7.9
+  schemas: `getHealth`, `getMemberGraph`, `retrieve`, `generateWorkout`, `explain`.
+  Base URL via `EXPO_PUBLIC_API_URL` (default `http://localhost:8000`).
+- **Minimal `App.tsx`** calls `/health` on mount and shows the result — the P4-T1
+  proof; P4-T2/T3 replace it with the real UI.
+- **BACKEND CHANGE — added CORS.** The browser blocked the cross-origin call
+  (`:8081`→`:8000`, "Failed to fetch"). Added FastAPI `CORSMiddleware`
+  (`CORS_ALLOW_ORIGINS`, default `*` — synthetic data, no auth). Required for ANY
+  browser client; bundled here since it's part of "frontend calls backend".
+- **node_modules git-ignored** (template `.gitignore`); `package-lock.json` committed.
+- **Validation (real browser, agent-browser):** started backend (uvicorn) + Expo web
+  (`expo start --web`), loaded `http://localhost:8081` → renders "Knowledge Graph
+  Coaching" and shows **"backend: ok"** `{"status":"ok"}` (green). tsc --noEmit clean.
+  Screenshot captured.
+
 ## 2026-06-02 — P3-T5 (/api/generate/workout + /api/explain + structured logging)
 
 - **Endpoints match PRD §7.9:** `/api/generate/workout` → `{workout, explanation,

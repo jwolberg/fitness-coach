@@ -1420,3 +1420,80 @@ retrieve→generate→validate→explain with deterministic repair/fallback. ✔
 - **Updated ticket status:** P3-T5 → Complete (Phase 3 Complete)
 - **Any blockers:** None
 - **Recommended next ticket:** P4-T1
+
+---
+---
+
+# Implementation — P4-T1
+
+## Scope Implemented
+- **Requested scope:** "Build the frontend (P4)" → first frontend ticket.
+- **Related phase:** Phase 4 — Frontend Demo UX
+- **Related ticket(s):** **P4-T1 — Expo / RN Web scaffold + API client**
+
+## Approach
+- **Strategy:** Scaffold an Expo app (RN Web build target) and a typed API client;
+  prove the web build reaches the backend.
+- **Key decisions:** `create-expo-app` blank-typescript; client mirrors §7.9 schemas;
+  `EXPO_PUBLIC_API_URL` config; added FastAPI CORS (required for a browser client).
+
+---
+
+## Implementation Plan
+1. Scaffold `frontend/` (Expo) + web deps.
+2. `src/api/types.ts` + `src/api/client.ts`.
+3. Minimal `App.tsx` health check.
+4. Backend: add `CORSMiddleware`.
+5. Validate in a real browser.
+
+**Files created:** `frontend/*` (Expo project), `src/api/{types,client}.ts`.
+**Modified:** `App.tsx`, backend `app/main.py`, `app/config.py`, `.env.example`.
+
+---
+
+## Code Changes
+### File: frontend/src/api/client.ts (+ types.ts)
+- **Change summary:** Typed client (`getHealth`/`getMemberGraph`/`retrieve`/
+  `generateWorkout`/`explain`) + §7.9 types; base URL via `EXPO_PUBLIC_API_URL`.
+### File: frontend/App.tsx
+- **Change summary:** Minimal screen that calls `/health` and shows status.
+### File: backend/app/main.py (+ config.py, .env.example)
+- **Change summary:** Added `CORSMiddleware` (`CORS_ALLOW_ORIGINS`, default `*`).
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Web build runs and calls the backend successfully (ARCH §3.1; challenge "simple frontend").
+  - **Implementation:** Expo RN Web app + typed client; CORS-enabled backend.
+  - **File(s):** `frontend/`, `backend/app/main.py`.
+  - **Verification status:** **Verified in a real browser** — page renders, "backend: ok".
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P4-T1 — Expo / RN Web scaffold + API client
+  - **Status:** Complete
+  - **What was completed:** Expo scaffold, typed API client, CORS, browser-verified.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Real browser (agent-browser):** backend (uvicorn) + Expo web up; `localhost:8081`
+  renders "Knowledge Graph Coaching" + **"backend: ok"** `{"status":"ok"}`; screenshot saved.
+- `tsc --noEmit` clean; CORS preflight returns `access-control-allow-origin: *`.
+
+---
+
+## Open Issues
+- **Known limitations:** Minimal UI (health check only) — member/context view is P4-T2.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P4-T1)
+- **Current phase:** Phase 4 — Frontend Demo UX
+- **Current ticket:** P4-T2 — Member selector + profile/context view (next)
+- **Updated ticket status:** P4-T1 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P4-T2

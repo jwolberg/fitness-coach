@@ -37,6 +37,9 @@ class Settings:
     embedding_model: str
     embedding_dim: int
 
+    # Browser CORS origins for the frontend (comma-separated; "*" allows all).
+    cors_allow_origins: list[str]
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
@@ -52,4 +55,5 @@ def get_settings() -> Settings:
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
         embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"),
         embedding_dim=int(os.getenv("EMBEDDING_DIM", "1536")),
+        cors_allow_origins=[o.strip() for o in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",") if o.strip()],
     )

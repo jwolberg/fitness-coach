@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 4 — Frontend Demo UX
-- **Current ticket:** P4-T1 (Phases 0, 1, 2, 3 Complete)
+- **Current ticket:** P4-T2 (Phases 0-3 Complete; P4-T1 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -355,7 +355,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Web build runs and calls the backend successfully (ARCH §3.1;
     challenge "simple frontend").
   - Commit: one commit referencing P4-T1.
-  - Status: Todo
+  - Status: Complete (verified in a real browser: Expo RN Web app renders and shows
+    "backend: ok"; typed API client added; backend CORS enabled)
 - **P4-T2 — Member selector + profile/context view**
   - Objective: Select a synthetic member; show profile, goals, injuries, equipment,
     recent signals (via `/api/member/:id/graph` + ingest data).
@@ -452,11 +453,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P4-T1 — Expo / RN Web scaffold + API client.
-- **Why this is next:** The backend API is complete and verified. Phase 4 builds the
-  demo client: P4-T1 scaffolds an Expo app configured for React Native Web with a typed
-  API client to the backend — the foundation the member/context view (P4-T2) and the
-  query→workout→why view (P4-T3) render on.
+- **Start with:** P4-T2 — Member selector + profile/context view.
+- **Why this is next:** The Expo scaffold + typed client work and reach the backend
+  (P4-T1). P4-T2 builds the first real screen: select Maya and render her profile,
+  goals, injuries, equipment, and recent signals (via `/api/member/:id/graph` + ingest
+  data) — PRD §7.10 minimum features 1–2.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
