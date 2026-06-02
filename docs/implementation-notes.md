@@ -54,6 +54,28 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — LIVE validation (closes the "pending Docker daemon" caveats)
+
+The Docker daemon became available, so the deferred end-to-end checks for P0-T2,
+P1-T1, and P1-T2 were run for real against `neo4j:5.26-community` via Compose:
+
+- **P0-T2:** `docker compose up neo4j` → healthy; then `--build api` → the API
+  container connected on attempt 1 (`bolt://neo4j:7687`), and `GET
+  http://localhost:8000/health` → 200. API logs show
+  "Connected to Neo4j (opened a session on attempt 1)".
+- **P1-T1:** `apply_schema()` created **16 constraints + 1 vector index**
+  (`SHOW CONSTRAINTS` = 16, `SHOW INDEXES` VECTOR = 1). Re-running produced no
+  errors/changes → idempotent confirmed.
+- **P1-T2:** `ingest_exercises()` → **50 Exercise nodes** (all `:Embeddable`),
+  9 Joint / 19 MuscleGroup / 32 Equipment / 36 MovementPattern; edges
+  LOADS_JOINT 124, TRAINS_MUSCLE 120, USES_EQUIPMENT 67, HAS_MOVEMENT_PATTERN 93,
+  HAS_BILATERAL_PAIR 0. Ran twice → counts unchanged (idempotent). The 0
+  bilateral edges are expected: none of the 50 `bilateral_pair_id`s resolve within
+  the set (verified), and we deliberately don't create stub nodes.
+
+Compose was torn down afterward (`docker compose down`, volume retained). A local
+`.env` (copy of `.env.example`, gitignored) was created for the run.
+
 ## 2026-06-02 — P1-T1 (Graph schema, constraints & vector index)
 
 - **One uniqueness constraint per node label (16 total).** Context/member-scoped

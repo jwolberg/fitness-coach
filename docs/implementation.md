@@ -369,3 +369,101 @@
 - **Updated ticket status:** P1-T1 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P1-T2
+
+> **Live validation update:** the Docker daemon later became available, so P0-T2,
+> P1-T1, and P1-T2 were verified end-to-end against a real Neo4j (see the P1-T2
+> Validation section and implementation-notes). The earlier "pending Docker daemon"
+> caveats for P0-T2/P1-T1 are now resolved.
+
+---
+---
+
+# Implementation — P1-T2
+
+## Scope Implemented
+- **Requested scope:** "continue the build" → next ticket in dependency order.
+- **Related phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Related ticket(s):** **P1-T2 — Exercise ingestion from `exercises.json`**
+
+## Approach
+- **High-level strategy:** Upsert each exercise as a node and link it to Joint /
+  MuscleGroup / Equipment / MovementPattern; link bilateral pairs only when both
+  sides exist. All MERGE-based for idempotency.
+- **Key decisions:**
+  - `FOREACH` over each list builds ontology nodes + edges and tolerates empty lists.
+  - `HAS_BILATERAL_PAIR` created only when the target exercise is present (no stub
+    nodes); `bilateral_pair_id` preserved as a node property regardless.
+  - Exercises tagged `:Embeddable` now (embedding vector written in P2-T1).
+  - Pure `load_exercises` / `exercise_params` separated from graph writes for testability.
+- **Assumptions:** `exercises.json` at repo root by default; overridable via
+  `EXERCISES_PATH` (used by the container seed step in P5-T3).
+
+---
+
+## Implementation Plan
+1. `app/ingestion/__init__.py` + `app/ingestion/exercises.py`.
+2. Pure loaders (`load_exercises`, `exercise_params`) + `ingest_exercises()` writer.
+3. Validate pure parts offline; then validate writes against live Neo4j.
+
+**Files created:** `app/ingestion/__init__.py`, `app/ingestion/exercises.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/ingestion/exercises.py
+- **Change summary:** Loads `exercises.json` and upserts `Exercise` nodes (+`:Embeddable`)
+  with `LOADS_JOINT`/`TRAINS_MUSCLE`/`USES_EQUIPMENT`/`HAS_MOVEMENT_PATTERN` edges via
+  MERGE+FOREACH; second pass links `HAS_BILATERAL_PAIR` for in-library pairs only.
+  Returns the count ingested.
+
+### File: backend/app/ingestion/__init__.py
+- **Change summary:** Package marker.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** 50 exercises ingested with LOADS_JOINT/TRAINS_MUSCLE/USES_EQUIPMENT/
+  HAS_MOVEMENT_PATTERN edges; re-run idempotent (PRD §7.2, §9 steps 1–4).
+  - **Implementation:** `ingest_exercises()` → 50 nodes + edges; MERGE makes re-runs no-ops.
+  - **File(s):** `backend/app/ingestion/exercises.py`.
+  - **Verification status:** **Verified live** against Neo4j (counts below).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P1-T2 — Exercise ingestion from `exercises.json`
+  - **Status:** Complete
+  - **What was completed:** Exercise + ontology node/edge ingestion, idempotent,
+    verified against a live database.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Offline:** `load_exercises()` → 50 records; `exercise_params()` well-formed for all
+  (lists never None); 0 bilateral pairs resolve within the set; `py_compile` clean.
+- **Live (Docker daemon available):** brought up `neo4j` + `api` via Compose; ran
+  `apply_schema()` + `ingest_exercises()` twice. Results:
+  - Exercise: **50** (all `:Embeddable`); Joint 9, MuscleGroup 19, Equipment 32, MovementPattern 36.
+  - Edges: LOADS_JOINT 124, TRAINS_MUSCLE 120, USES_EQUIPMENT 67, HAS_MOVEMENT_PATTERN 93, HAS_BILATERAL_PAIR 0.
+  - Counts unchanged after the second run → **idempotent**.
+  - `SHOW CONSTRAINTS` = 16; VECTOR indexes = 1.
+  - `GET /health` (api container) → 200; logs confirm boot-time connect + schema apply.
+
+---
+
+## Open Issues
+- **Known limitations:** No `HAS_BILATERAL_PAIR` edges for this dataset (no pair IDs
+  resolve within the 50) — by design, not a bug. Embeddings not written yet (P2-T1).
+- **Unresolved edge cases:** None for this scope.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P1-T2)
+- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Current ticket:** P1-T3 — Synthetic member data + profile ingestion (Maya) (next)
+- **Updated ticket status:** P1-T2 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P1-T3

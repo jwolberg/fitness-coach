@@ -99,8 +99,10 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
-- **Current ticket:** P1-T2 (Phase 0 Complete: P0-T1, P0-T2; P1-T1 Complete)
-- **Blockers:** None (follow-up: run live `docker compose up` once a Docker daemon is available — schema/compose not exercised live in the build environment)
+- **Current ticket:** P1-T3 (Complete: P0-T1, P0-T2, P1-T1, P1-T2)
+- **Blockers:** None. P0-T2/P1-T1/P1-T2 verified live against `neo4j:5.26-community`
+  via `docker compose up` (50 exercises + edges ingested idempotently; 16 constraints
+  + vector index; API connects on boot; `/health` 200).
 
 ---
 
@@ -135,8 +137,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: `docker compose up` brings up Neo4j + API; API opens a session
     (challenge "Requirements"; ARCH §7; PRD §8).
   - Commit: one commit referencing P0-T2.
-  - Status: Complete (compose config + startup-session logic validated; live
-    `docker compose up` pending a Docker daemon — see implementation-notes)
+  - Status: Complete (verified live: neo4j + api come up; api connects on boot;
+    `/health` → 200)
 
 ---
 
@@ -159,8 +161,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: All PRD §7.1 node/edge types representable; constraints + vector
     index created idempotently (PRD §7.1; ARCH §3.7, §4).
   - Commit: one commit referencing P1-T1.
-  - Status: Complete (16 idempotent constraints + cosine vector index over
-    `:Embeddable`; builders validated, live execution pending a Docker daemon)
+  - Status: Complete (verified live: 16 constraints + 1 cosine vector index over
+    `:Embeddable`, created idempotently)
 - **P1-T2 — Exercise ingestion from `exercises.json`**
   - Objective: Parse `exercises.json`; create `Exercise` nodes and edges to
     `Joint`, `MuscleGroup`, `Equipment`, `MovementPattern`, and `HAS_BILATERAL_PAIR`.
@@ -170,7 +172,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     `USES_EQUIPMENT`/`HAS_MOVEMENT_PATTERN` edges; re-run is idempotent
     (PRD §7.2, §9 Ingestion steps 1–4; challenge "Data").
   - Commit: one commit referencing P1-T2.
-  - Status: Todo
+  - Status: Complete (verified live: 50 Exercise nodes + 404 edges ingested
+    idempotently; HAS_BILATERAL_PAIR = 0 by design — no pair IDs resolve in-set)
 - **P1-T3 — Synthetic member data + profile ingestion (Maya)**
   - Objective: Author Maya fixture (PRD §16); ingest structured profile fields into
     `Member`, `Goal`, `Preference`, `Workout`/`WorkoutSession`, equipment access,
@@ -428,11 +431,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P1-T2 — Exercise ingestion from `exercises.json`.
-- **Why this is next:** The schema/constraints/vector index (P1-T1) are in place, so
-  the graph can now be populated. P1-T2 ingests the 50 exercises and their edges to
-  Joint/MuscleGroup/Equipment/MovementPattern (+ bilateral pairs) — the exercise
-  library every later member-context, retrieval, and safety ticket reasons over.
+- **Start with:** P1-T3 — Synthetic member data + profile ingestion (Maya).
+- **Why this is next:** The exercise library is ingested (P1-T2). P1-T3 adds the
+  member side of the graph — Maya's profile, goals, preferences, equipment access,
+  workout history/adherence, and `HAS_INJURY → Injury → AFFECTS_JOINT → Joint` —
+  which connects to the exercise library and unlocks the deterministic injury filter
+  (P1-T5) and all of retrieval/generation.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
