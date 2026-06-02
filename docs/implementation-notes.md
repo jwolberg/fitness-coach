@@ -54,6 +54,26 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P3-T2 (Safety validator: validation + repair + fallback)
+
+- **Extends `validator.py` (P1-T5).** `validate_workout` flags each exercise as
+  `unknown_exercise` / `contraindicated` / `unavailable_equipment` /
+  `preference_conflict` / `malformed` (PRD §7.7). All deterministic, in-graph.
+- **Preference check is keyword-based and deterministic.** Dislike tags → cue words
+  (e.g. `high_impact` → jump/hop/plyo/jack…); flags e.g. "Jumping Jack" for Maya.
+- **`validate_and_repair`**: drops bad exercises, backfills from `safe_exercise_candidates`
+  (skipping preference conflicts) up to the original count; if nothing safe remains →
+  `safe_fallback`. `passed` reflects the ORIGINAL workout; the returned workout is
+  always safe. Result carries `{passed, issues, repaired, used_fallback}`.
+- **`safe_fallback` = PRD §10 message, joint-aware** ("...coach review before loading
+  the knee joint..."), with a few safe candidates at generic 3×10-12 / 60s.
+- **LLM is not the only safety layer** (ARCH §1): even if generation emits a bad
+  exercise, this layer removes/replaces it before the response leaves the API.
+- **Validation (live):** injected a workout with a contraindicated + unknown + malformed
+  exercise → all three problems detected; repair produced 3 safe, all-known exercises
+  (no contraindicated); "Jumping Jack" → preference_conflict; `safe_fallback` flagged
+  insufficient, mentioned knee, all-safe; a clean safe-candidate workout passed.
+
 ## 2026-06-02 — P3-T1 (LLM adapter + workout generator)
 
 - **`LLMClient` mirrors the `Embedder` seam** — OpenAI-only for now (`LLM_PROVIDER`,

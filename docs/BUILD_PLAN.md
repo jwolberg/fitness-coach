@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
-- **Current ticket:** P3-T2 (Phases 0, 1, 2 Complete; P3-T1 Complete)
+- **Current ticket:** P3-T3 (Phases 0, 1, 2 Complete; P3-T1, P3-T2 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
@@ -298,7 +298,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     replaced by the PRD §10 fallback; LLM is not the only safety layer
     (PRD §7.7, §10; challenge "Generation"/"Resilience").
   - Commit: one commit referencing P3-T2.
-  - Status: Todo
+  - Status: Complete (verified live: detects contraindicated/unknown/malformed/
+    preference_conflict; repairs by drop+backfill; knee-aware safe fallback; clean passes)
 - **P3-T3 — Explanation builder**
   - Objective: Turn the recorded `graph_trace` into a human-readable "why?" /
     "what to watch for" answer.
@@ -446,12 +447,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P3-T2 — Safety validator: validation + repair + fallback.
-- **Why this is next:** The generator (P3-T1) produces a workout but its output is not
-  yet enforced. P3-T2 extends `app/safety/validator.py` to validate the generated
-  workout (unknown ids, contraindicated joints, unavailable equipment, preference
-  conflicts, malformed structure) and either repair from safe candidates or return the
-  PRD §10 safe fallback — making safety deterministic, not LLM-trusted.
+- **Start with:** P3-T3 — Explanation builder.
+- **Why this is next:** Generation (P3-T1) + deterministic validation (P3-T2) are done.
+  P3-T3 turns the recorded `graph_trace` (from P2-T2) into a human-readable "why?" /
+  "what to watch for" answer — grounded in graph evidence, not re-prompted prose
+  (PRD §7.8) — completing the explainability promise before orchestration wires it all.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

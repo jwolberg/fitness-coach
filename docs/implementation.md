@@ -1102,3 +1102,80 @@ contraindicated exercises excluded; `/api/member/:id/graph` returns the neighbor
 - **Updated ticket status:** P3-T1 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P3-T2
+
+---
+---
+
+# Implementation — P3-T2
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket.
+- **Related phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Related ticket(s):** **P3-T2 — Safety validator: validation + repair + fallback**
+
+## Approach
+- **Strategy:** Extend `validator.py` to validate a generated workout, repair from safe
+  candidates, or return the PRD §10 fallback — deterministic, not LLM-trusted.
+- **Key decisions:** Per-exercise problem taxonomy; keyword-based preference check;
+  repair = drop bad + backfill; joint-aware fallback message.
+
+---
+
+## Implementation Plan
+1. Add to `app/safety/validator.py`: `known_exercise_ids`, `validate_workout`,
+   `safe_fallback`, `validate_and_repair` (+ dislike/joint helpers).
+2. Validate detection/repair/fallback/preference/clean paths live.
+
+**Files modified:** `backend/app/safety/validator.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/safety/validator.py
+- **Change summary:** `validate_workout` (5 problem types), `validate_and_repair`
+  (drop+backfill or fallback), `safe_fallback` (PRD §10, joint-aware), plus
+  `known_exercise_ids` and dislike/joint helpers.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** A contraindicated/unknown exercise is caught and repaired or replaced
+  by the PRD §10 fallback; LLM is not the only safety layer (PRD §7.7, §10).
+  - **Implementation:** `validate_workout` + `validate_and_repair` + `safe_fallback`.
+  - **File(s):** `backend/app/safety/validator.py`.
+  - **Verification status:** **Verified live** (all paths below).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P3-T2 — Safety validator: validation + repair + fallback
+  - **Status:** Complete
+  - **What was completed:** Deterministic validation, repair, and fallback, verified live.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Live:** injected workout with contraindicated + unknown + malformed → problems
+  `{contraindicated, unknown_exercise, malformed}` detected; `validate_and_repair` →
+  repaired=True, 3 safe all-known exercises, no contraindicated; "Jumping Jack" →
+  `preference_conflict`; `safe_fallback` → insufficient flag, knee-aware message,
+  all-safe; clean safe-candidate workout passes.
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** Preference detection is keyword-based (demo-grade);
+  "explicitly marked safe/modified" injury exceptions (PRD §10) not modeled.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P3-T2)
+- **Current phase:** Phase 3
+- **Current ticket:** P3-T3 — Explanation builder (next)
+- **Updated ticket status:** P3-T2 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P3-T3
