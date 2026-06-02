@@ -1179,3 +1179,77 @@ contraindicated exercises excluded; `/api/member/:id/graph` returns the neighbor
 - **Updated ticket status:** P3-T2 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P3-T3
+
+---
+---
+
+# Implementation — P3-T3
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket.
+- **Related phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Related ticket(s):** **P3-T3 — Explanation builder**
+
+## Approach
+- **Strategy:** Deterministically turn the recorded `graph_trace` + retrieved context
+  into human-readable "why?"/"watch-for" answers — no re-query, no LLM.
+- **Key decisions:** Keyword intent routing (exclusion/inclusion/watch-outs/constraints);
+  exclusion chain = Member→Injury→Joint←Exercise; best-effort name matching.
+
+---
+
+## Implementation Plan
+1. `app/explain/builder.py` — `explain(question, member_id, retrieved_context)` + helpers.
+2. Validate on the 3 demo questions live.
+
+**Files created:** `app/explain/__init__.py`, `app/explain/builder.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/explain/builder.py
+- **Change summary:** `explain()` routes by intent; `_explain_exclusion` builds the
+  contraindication chain + trace; `_explain_watchouts`/`_explain_constraints`/
+  `_explain_inclusion` summarize from context; all grounded in the trace.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** For "why skip barbell squats?", answer traces Member→Injury→Joint←Exercise
+  (matching PRD §7.8 example); grounded in trace, not regenerated prose (PRD §7.8).
+  - **Implementation:** `_explain_exclusion` emits the chain + a graph_trace subset.
+  - **File(s):** `backend/app/explain/builder.py`.
+  - **Verification status:** **Verified live** (3 demo questions).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P3-T3 — Explanation builder
+  - **Status:** Complete
+  - **What was completed:** Deterministic, graph-grounded explanations for the demo asks.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Live:** "why skip barbell squats" → knee contraindication chain + trace;
+  "what to watch for" → adherence 65%/missed 2/knee injury/goals/missed sessions;
+  "what constraints" → injuries→knee (21 excluded) + equipment + preferences.
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** Exact exercise-name matching is approximate (token overlap);
+  the contraindication reasoning shown is always real.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P3-T3)
+- **Current phase:** Phase 3
+- **Current ticket:** P3-T4 — LangGraph orchestration pipeline (next)
+- **Updated ticket status:** P3-T3 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P3-T4

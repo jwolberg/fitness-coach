@@ -54,6 +54,25 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P3-T3 (Explanation builder)
+
+- **Deterministic templating over the recorded `graph_trace` — no LLM, no re-query.**
+  This is the strongest reading of "traceable to graph relationships, not a vague LLM
+  rationalization" (challenge): the answer literally cannot hallucinate because it's
+  assembled from the retrieved context + trace.
+- **Intent routing** by keyword: watch-outs / constraints / inclusion / (default)
+  exclusion — covering the PRD §7.8 follow-ups and the demo's three asks.
+- **Exclusion match is best-effort by name tokens.** "Why skip barbell squats?" →
+  picks the highest-token-overlap excluded exercise (here "Barbell Racked Forward
+  Lunge"; the dataset has no literal barbell squat) and builds the
+  Member→Injury→Joint←Exercise chain. The reasoning shown is always a real
+  contraindication; exact-name matching is approximate by design.
+- **Validation (live):** all three demo questions produce grounded answers with the
+  correct trace — exclusion shows the knee contraindication chain; watch-outs surface
+  65% adherence / missed 2 / knee injury / goals / missed sessions; constraints list
+  injuries→knee (21 excluded) + equipment + preferences. Fixed a cosmetic "Maya:;"
+  join glitch.
+
 ## 2026-06-02 — P3-T2 (Safety validator: validation + repair + fallback)
 
 - **Extends `validator.py` (P1-T5).** `validate_workout` flags each exercise as

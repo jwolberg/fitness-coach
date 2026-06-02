@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
-- **Current ticket:** P3-T3 (Phases 0, 1, 2 Complete; P3-T1, P3-T2 Complete)
+- **Current ticket:** P3-T4 (Phases 0, 1, 2 Complete; P3-T1, P3-T2, P3-T3 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
@@ -309,7 +309,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     Member→Injury→Joint←Exercise (matching PRD §7.8 example); grounded in trace,
     not regenerated prose (PRD §7.8; challenge "Explainability").
   - Commit: one commit referencing P3-T3.
-  - Status: Todo
+  - Status: Complete (verified live: deterministic, graph-grounded answers for exclusion
+    /watch-outs/constraints; exclusion shows the Member→Injury→Joint←Exercise chain)
 - **P3-T4 — LangGraph orchestration pipeline + thin/empty-context recovery**
   - Objective: `StateGraph` with typed state wiring retrieve→generate→validate→
     (repair loop)→explain; handle thin/empty retrieval by asking for more or
@@ -447,11 +448,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P3-T3 — Explanation builder.
-- **Why this is next:** Generation (P3-T1) + deterministic validation (P3-T2) are done.
-  P3-T3 turns the recorded `graph_trace` (from P2-T2) into a human-readable "why?" /
-  "what to watch for" answer — grounded in graph evidence, not re-prompted prose
-  (PRD §7.8) — completing the explainability promise before orchestration wires it all.
+- **Start with:** P3-T4 — LangGraph orchestration pipeline + thin/empty-context recovery.
+- **Why this is next:** The four pipeline stages exist as functions (retrieve →
+  generate → validate → explain). P3-T4 wires them into a `StateGraph` with typed state
+  and a repair loop, enforcing the fixed ordering (ARCH §5) and handling thin/empty
+  retrieval gracefully — the spine the API endpoints (P3-T5) invoke.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
