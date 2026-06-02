@@ -54,6 +54,32 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P3-T1 (LLM adapter + workout generator)
+
+- **`LLMClient` mirrors the `Embedder` seam** — OpenAI-only for now (`LLM_PROVIDER`,
+  `LLM_MODEL` default `gpt-4o-mini`), JSON mode (`response_format=json_object`),
+  temperature 0.2. The LLM is never the only safety layer (ARCH §1) — P3-T2 validates.
+- **Prompt fixes the output JSON shape + hard safety rules** (use only `safe_candidates`
+  by id+name; never `excluded_exercises`; don't invent; respect preferences; recover
+  gracefully). The user prompt carries only the focused context, not the graph.
+- **Generator returns `{workout, retrieved_context}`** so the validator/explanation/
+  orchestration reuse the same trace without re-querying.
+- **Tuning — graceful recovery vs. empty output.** First run: for "lower-body session"
+  the model correctly judged a knee injury + equipment limits leave too few *lower-body*
+  options and returned `insufficient_safe_options:true` with **0 exercises** + an
+  explanation (safe, no hallucination — exactly PRD §7.6/§10). But 0 exercises with 8
+  safe candidates is a poor demo, so I strengthened the prompt: when the requested
+  focus can't be trained safely, still populate `exercises` with the best safe
+  alternatives (upper/mobility/hip-dominant) and flag the limitation. Re-run: 1 safe
+  exercise (`Resistance Band Reverse Curl`), all ids in the safe set, none
+  contraindicated, `insufficient_safe_options:true` + explanatory notes.
+- **LATENCY follow-up:** end-to-end generate ≈ 7.3-7.6s (1 embedding call for the
+  query + the LLM completion), **above the ~5s PRD target**. Options for later:
+  smaller/faster model, trimming the prompt, caching the query embedding, or
+  streaming. PRD §12 cares more about the reasoning than the exact number; noted.
+- **Validation (live, real OpenAI):** required keys present; exercises ⊆ safe set;
+  no contraindicated exercise in output; structured workout matches PRD §7.6.
+
 ## 2026-06-02 — P2-T3 (/api/retrieve + /api/member/:id/graph endpoints & schemas)
 
 - **Response matches PRD §7.9 exactly:** `/api/retrieve` → `{member_id,

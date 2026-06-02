@@ -1014,3 +1014,91 @@ contraindicated exercises excluded; `/api/member/:id/graph` returns the neighbor
 - **Updated ticket status:** P2-T3 → Complete (Phase 2 Complete)
 - **Any blockers:** None
 - **Recommended next ticket:** P3-T1
+
+---
+---
+
+# Implementation — P3-T1
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket (starts Phase 3).
+- **Related phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Related ticket(s):** **P3-T1 — LLM adapter + workout generator**
+
+## Approach
+- **Strategy:** Add an `LLMClient` seam + a generator that turns retrieved context into
+  the structured PRD §7.6 workout JSON.
+- **Key decisions:** OpenAI JSON mode; prompt encodes the output schema + hard safety
+  rules; generator returns `{workout, retrieved_context}` for downstream reuse;
+  graceful recovery when the requested focus can't be trained safely.
+
+---
+
+## Implementation Plan
+1. Config: `llm_model` (`LLM_MODEL`, default `gpt-4o-mini`); `.env.example`.
+2. `app/llm/client.py` — `LLMClient` + `OpenAILLMClient` + `get_llm_client`.
+3. `app/generation/prompts.py` — system + user prompt builders.
+4. `app/generation/generator.py` — `generate_workout`.
+
+**Files created:** `app/llm/__init__.py`, `app/llm/client.py`,
+`app/generation/__init__.py`, `app/generation/prompts.py`, `app/generation/generator.py`.
+**Modified:** `app/config.py`, `.env.example`.
+
+---
+
+## Code Changes
+
+### File: backend/app/llm/client.py
+- **Change summary:** Provider-agnostic LLM seam; `OpenAILLMClient.complete_json`
+  (JSON mode, temp 0.2); missing-key guard; cached factory.
+
+### File: backend/app/generation/prompts.py
+- **Change summary:** `WORKOUT_SYSTEM` (output schema + safety rules + graceful
+  recovery) and `build_workout_user` (compact focused context).
+
+### File: backend/app/generation/generator.py
+- **Change summary:** `generate_workout(member_id, query)` → `{workout, retrieved_context}`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Produces the PRD §7.6 workout structure from retrieved context;
+  provider configurable (PRD §7.6, §9 Generation step 1–2; ARCH §6).
+  - **Implementation:** `generate_workout` returns the full §7.6 shape via the
+    configurable `LLMClient`.
+  - **File(s):** `backend/app/generation/*`, `backend/app/llm/client.py`.
+  - **Verification status:** **Verified live** (real OpenAI).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P3-T1 — LLM adapter + workout generator
+  - **Status:** Complete
+  - **What was completed:** LLM seam + structured workout generation, verified live.
+  - **Remaining work:** Latency tuning (≈7.5s vs ~5s target) — follow-up.
+
+---
+
+## Validation
+- **Live (real OpenAI):** workout has all §7.6 keys; exercises ⊆ safe candidate set;
+  no contraindicated exercise in output; `insufficient_safe_options:true` + explanatory
+  notes when the requested focus can't be safely trained (graceful recovery).
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Latency:** ≈7.3–7.6s end-to-end (> ~5s PRD target) — candidate optimizations noted
+  in implementation-notes.
+- **Conservatism:** the model offers a small safe alternative session for Maya's
+  knee+equipment-limited case; further repair/expansion is P3-T2/P3-T4.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P3-T1)
+- **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Current ticket:** P3-T2 — Safety validator: validation + repair + fallback (next)
+- **Updated ticket status:** P3-T1 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P3-T2

@@ -99,7 +99,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
-- **Current ticket:** P3-T1 (Phases 0, 1, 2 Complete)
+- **Current ticket:** P3-T2 (Phases 0, 1, 2 Complete; P3-T1 Complete)
+- **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
   vector dim is 1536. P2-T1 verified live with REAL OpenAI (54 nodes embedded;
@@ -285,7 +286,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Produces the PRD §7.6 workout structure from retrieved context;
     provider configurable (PRD §7.6, §9 Generation step 1–2; ARCH §6).
   - Commit: one commit referencing P3-T1.
-  - Status: Todo
+  - Status: Complete (verified live: structured §7.6 workout; exercises ⊆ safe set;
+    no contraindicated; graceful recovery via insufficient_safe_options. Latency ~7.5s)
 - **P3-T2 — Safety validator: validation + repair + fallback**
   - Objective: Validate generated workout (unknown IDs, contraindicated joints,
     unavailable equipment, preference conflicts, malformed structure); repair from
@@ -444,12 +446,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P3-T1 — LLM adapter + workout generator.
-- **Why this is next:** Retrieval is exposed over typed REST (Phase 2 done). Phase 3
-  turns the focused context into a recommendation: P3-T1 adds an `LLMClient` adapter
-  and a generator that produces the structured PRD §7.6 workout JSON (title, goal,
-  warm-up, exercises w/ sets·reps·rest, intensity, substitutions, notes) from the
-  retrieved context — the input the deterministic validator (P3-T2) then checks.
+- **Start with:** P3-T2 — Safety validator: validation + repair + fallback.
+- **Why this is next:** The generator (P3-T1) produces a workout but its output is not
+  yet enforced. P3-T2 extends `app/safety/validator.py` to validate the generated
+  workout (unknown ids, contraindicated joints, unavailable equipment, preference
+  conflicts, malformed structure) and either repair from safe candidates or return the
+  PRD §10 safe fallback — making safety deterministic, not LLM-trusted.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

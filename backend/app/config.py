@@ -26,6 +26,7 @@ class Settings:
     # LLM / embeddings provider selection (used from Phase 2/3). Provider-agnostic
     # behind the adapter per ARCHITECTURE §6; keys are optional at skeleton stage.
     llm_provider: str
+    llm_model: str
     embedding_provider: str
     openai_api_key: str | None
     anthropic_api_key: str | None
@@ -45,6 +46,7 @@ def get_settings() -> Settings:
         neo4j_user=os.getenv("NEO4J_USER", "neo4j"),
         neo4j_password=os.getenv("NEO4J_PASSWORD", "password"),
         llm_provider=os.getenv("LLM_PROVIDER", "openai"),
+        llm_model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
         embedding_provider=os.getenv("EMBEDDING_PROVIDER", "openai"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
