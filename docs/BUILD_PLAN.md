@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 4 — Frontend Demo UX
-- **Current ticket:** P4-T2 (Phases 0-3 Complete; P4-T1 Complete)
+- **Current ticket:** P4-T3 (Phases 0-3 Complete; P4-T1, P4-T2 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -364,7 +364,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Depends on: P4-T1.
   - Acceptance: Maya's context renders (PRD §7.10 minimum features 1–2).
   - Commit: one commit referencing P4-T2.
-  - Status: Todo
+  - Status: Complete (verified in browser: selector + full profile/context view)
 - **P4-T3 — Query → workout → safety result + "why?" explanation view**
   - Objective: Coaching question input; render generated workout, safety validation
     result, and "why?" follow-up explanation traces.
@@ -453,11 +453,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P4-T2 — Member selector + profile/context view.
-- **Why this is next:** The Expo scaffold + typed client work and reach the backend
-  (P4-T1). P4-T2 builds the first real screen: select Maya and render her profile,
-  goals, injuries, equipment, and recent signals (via `/api/member/:id/graph` + ingest
-  data) — PRD §7.10 minimum features 1–2.
+- **Start with:** P4-T3 — Query → workout → safety result + "why?" explanation view.
+- **Why this is next:** The member/context view (P4-T2) is in place. P4-T3 adds the
+  coaching interaction: a question input that calls /api/generate/workout (render the
+  workout + safety_validation) and "why?" follow-ups via /api/explain — the three demo
+  asks end-to-end (PRD §7.10 features 3–7).
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

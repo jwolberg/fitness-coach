@@ -54,6 +54,21 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P4-T2 (Member selector + profile/context view)
+
+- **Profile built from `/api/member/:id/graph`** (`buildProfile` groups nodes by type;
+  derives injury→joint from `AFFECTS_JOINT` edges; counts excluded `Exercise` nodes).
+- **Reusable UI kit** (`components/ui.tsx`: Card/Section/Chip/ChipRow + color tokens)
+  keeps the screens consistent and non-sloppy.
+- **`MemberScreen`** renders: Maya card (training age, notes, adherence/missed chips),
+  Injuries (knee pain → affects knee, "21 excluded as contraindicated"), Goals,
+  Preferences (like=green / dislike=warn), Equipment, Recent sessions
+  (completed/missed), Recent signals (the chat quote). `App.tsx` adds the member
+  selector (Maya; built to take more) + scrollable layout.
+- **Validation (real browser):** restarted Expo (CI mode caches the bundle — needed a
+  `--clear` restart to pick up new files), reloaded → full profile renders correctly;
+  screenshot captured. tsc --noEmit clean.
+
 ## 2026-06-02 — P4-T1 (Expo / RN Web scaffold + API client)
 
 - **Scaffolded with `create-expo-app` blank-typescript** (Expo SDK 56, React 19, RN

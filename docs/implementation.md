@@ -1497,3 +1497,79 @@ retrieve→generate→validate→explain with deterministic repair/fallback. ✔
 - **Updated ticket status:** P4-T1 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P4-T2
+
+---
+---
+
+# Implementation — P4-T2
+
+## Scope Implemented
+- **Requested scope:** frontend phase → next ticket.
+- **Related phase:** Phase 4 — Frontend Demo UX
+- **Related ticket(s):** **P4-T2 — Member selector + profile/context view**
+
+## Approach
+- **Strategy:** Render the member's context from `/api/member/:id/graph`, grouped into
+  profile sections, behind a member selector.
+- **Key decisions:** `buildProfile` shapes graph nodes/edges; small reusable UI kit;
+  injury→joint derived from edges; excluded-exercise count surfaced.
+
+---
+
+## Implementation Plan
+1. `src/lib/memberProfile.ts` — `buildProfile`.
+2. `src/components/ui.tsx` — Card/Section/Chip kit.
+3. `src/screens/MemberScreen.tsx` — profile sections.
+4. `App.tsx` — selector + layout.
+
+**Files created:** `src/lib/memberProfile.ts`, `src/components/ui.tsx`,
+`src/screens/MemberScreen.tsx`. **Modified:** `App.tsx`.
+
+---
+
+## Code Changes
+### File: frontend/src/screens/MemberScreen.tsx
+- **Change summary:** Fetches the member graph, builds the profile, renders Member /
+  Injuries / Goals / Preferences / Equipment / Recent sessions / Recent signals.
+### File: frontend/src/lib/memberProfile.ts
+- **Change summary:** Groups graph nodes by type; derives injury joints from edges.
+### File: frontend/src/components/ui.tsx + App.tsx
+- **Change summary:** Reusable UI primitives; member selector + scroll layout.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Maya's context renders (PRD §7.10 minimum features 1–2).
+  - **Implementation:** Selector + profile sections from the graph endpoint.
+  - **File(s):** `frontend/src/screens/MemberScreen.tsx`, `App.tsx`.
+  - **Verification status:** **Verified in a real browser** (screenshot).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P4-T2 — Member selector + profile/context view
+  - **Status:** Complete
+  - **What was completed:** Member selector + full profile/context view, browser-verified.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Real browser:** Maya profile renders — adherence 65%/missed 2, knee injury (affects
+  knee, 21 excluded), goals, preferences (color-coded), equipment, recent sessions, chat signal.
+- `tsc --noEmit` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** One member (Maya) by design; selector built to extend.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P4-T2)
+- **Current phase:** Phase 4 — Frontend Demo UX
+- **Current ticket:** P4-T3 — Query → workout → safety + "why?" view (next)
+- **Updated ticket status:** P4-T2 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P4-T3
