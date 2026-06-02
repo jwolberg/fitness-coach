@@ -54,6 +54,20 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P5-T1 + P5-T2 (critical-path tests)
+
+- **Both required tests written together** (deterministic graph layer → no LLM/embeddings
+  needed, so they run with just Neo4j up). `conftest.py` seeds the graph idempotently
+  and **skips the session with a clear message if Neo4j is unreachable** (friendly `pytest`).
+- **P5-T1 injury filtering** (`test_injury_filtering.py`): contraindicated set == knee-loading
+  set exactly; safe candidates disjoint from contraindicated; validator rejects a workout
+  with a contraindicated exercise; repair removes it. *Why chosen:* the core safety promise.
+- **P5-T2 graph retrieval** (`test_graph_retrieval.py`): the Member→Injury→Joint←Exercise
+  traversal equals the contraindication core; every contraindicated exercise actually loads
+  an injured joint; `member_graph` returns a coherent, focused subgraph (safety edges present,
+  <50 exercises). *Why chosen:* everything downstream depends on correct retrieval.
+- **Result:** `7 passed in 11.25s` against live Neo4j. Added `pytest==9.0.3`.
+
 ## 2026-06-02 — P4-T3 (Query → workout → safety + "why?" view)
 
 - **`CoachPanel`** (query input → `/api/generate/workout`) + **`WorkoutView`**

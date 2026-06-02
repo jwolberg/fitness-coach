@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 5 — Polish: Tests, One-Command Demo, README
-- **Current ticket:** P5 (Phases 0-4 Complete)
+- **Current ticket:** P5-T3 (Phases 0-4 Complete; P5-T1, P5-T2 Complete — 7 tests pass)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -397,7 +397,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Test passes; documents *why chosen* — core safety guarantee
     (PRD §11 Test 1; challenge "test ≥2 critical paths").
   - Commit: one commit referencing P5-T1.
-  - Status: Todo
+  - Status: Complete (test_injury_filtering.py — 4 tests pass vs live Neo4j)
 - **P5-T2 — Critical-path test: graph retrieval correctness**
   - Objective: Test that traversal surfaces the `Member→Injury→Joint←Exercise`
     neighborhood and marks the right exercises contraindicated.
@@ -406,7 +406,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Test passes; documents *why chosen* — everything downstream depends
     on correct retrieval (PRD §11 Test 2; challenge "test ≥2 critical paths").
   - Commit: one commit referencing P5-T2.
-  - Status: Todo
+  - Status: Complete (test_graph_retrieval.py — 3 tests pass vs live Neo4j)
 - **P5-T3 — One-command demo: Compose with frontend + graph seeding**
   - Objective: Add `frontend` service to Compose; seed the graph (exercises + Maya)
     on first boot so the demo works immediately.
