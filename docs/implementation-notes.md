@@ -54,6 +54,19 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P5-T4 (README incl. graph schema, API docs & production-eval)
+
+- **README.md** covers all 12 PRD §14 items (overview, architecture, setup, run,
+  tests, graph schema, API, synthetic data, example prompts, limitations, tradeoffs,
+  and the named "How I would evaluate this system in production").
+- **Production-eval section** covers all PRD §14 subtopics: retrieval quality, safety
+  failure modes, injury-filtering accuracy (zero contraindicated-leak target), invalid
+  recommendation rate, explanation faithfulness, latency, token usage, coach
+  satisfaction, member outcome proxies, human review, monitoring/alerting.
+- Grounded in verified numbers (50 exercises, 21 contraindicated for Maya, 1536-dim
+  index, OpenAI-only) and honest about limitations (key required, ~7-8s latency,
+  lexicon extraction). **Build complete — all 22 tickets done.**
+
 ## 2026-06-02 — P5-T3 (one-command demo: Compose + frontend + seeding)
 
 - **`app/seed.py`** (one-shot): schema + exercises + Maya + signals + embeddings;

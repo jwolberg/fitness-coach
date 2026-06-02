@@ -97,9 +97,9 @@ only — no real member/health data; no auth, billing, team admin; no medical
 advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
-- **Overall status:** In Progress
+- **Overall status:** Complete (all 22 tickets)
 - **Current phase:** Phase 5 — Polish: Tests, One-Command Demo, README
-- **Current ticket:** P5-T4 — README (Phases 0-4 Complete; P5-T1/T2/T3 Complete)
+- **Current ticket:** — (all phases complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -426,7 +426,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: All 12 PRD §14 items present, including the named production
     evaluation section (PRD §14; challenge "README"; "What We're Looking For").
   - Commit: one commit referencing P5-T4.
-  - Status: Todo
+  - Status: Complete (README.md — all 12 §14 items + all production-eval subtopics)
 
 ---
 
@@ -455,11 +455,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P5-T2 (graph retrieval correctness) and P5-T1 (injury filtering) tests.
-- **Why this is next:** All product phases (0-4) are complete and browser-verified.
-  Phase 5 hardens the deliverable: the 2 required critical-path tests, the one-command
-  docker compose demo (with frontend + graph seeding), and the README incl. the
-  production-evaluation section.
+- **Build complete.** All 22 tickets across Phases 0-5 are done, committed, and pushed
+  to `origin/main`, each validated live (real Neo4j + OpenAI; browser-verified UI;
+  7 tests pass; one-command `docker compose up --build` demo confirmed end-to-end).
+  Suggested follow-ups (deferred): latency optimization, a local embedding/LLM
+  fallback, LLM-assisted signal extraction, a second synthetic member, graph viz.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
