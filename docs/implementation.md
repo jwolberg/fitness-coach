@@ -842,3 +842,92 @@ the contraindicated-exercise set for the injured member. ✔ All verified live.
 - **Updated ticket status:** P2-T1 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P2-T2
+
+---
+---
+
+# Implementation — P2-T2
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket.
+- **Related phase:** Phase 2 — GraphRAG Retrieval
+- **Related ticket(s):** **P2-T2 — GraphRAG retriever (vector + traversal + trace)**
+
+## Approach
+- **Strategy:** Combine vector search (semantic relevance) with graph traversal
+  (member neighborhood) and the deterministic safety filter into one focused context
+  window + a recorded `graph_trace`.
+- **Key decisions:**
+  - Safe-candidate set re-ranked by the query's vector scores (true GraphRAG).
+  - Hard caps for token efficiency (8 semantic / 8 safe / 5 sessions) — never dump the graph.
+  - `graph_trace` = subject-relation-object triples capturing the contraindication path.
+  - `CALL {}` subqueries to fetch the neighborhood without a cartesian product.
+
+---
+
+## Implementation Plan
+1. `app/retrieval/embeddings.py`: have `vector_search` return `node.id`.
+2. `app/retrieval/retriever.py`: `retrieve()` + `_fetch_member_context` + `_build_graph_trace`.
+3. Validate live with real OpenAI.
+
+**Files created:** `app/retrieval/retriever.py`. **Modified:** `app/retrieval/embeddings.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/retrieval/retriever.py
+- **Change summary:** `retrieve(member_id, query)` returns member/goals/preferences/
+  equipment/injuries/recent_sessions/context_signals/safe_candidates/excluded_exercises/
+  semantic_matches/graph_trace. Safe set ranked by semantic score; trace built from
+  injuries + contraindicated exercises.
+
+### File: backend/app/retrieval/embeddings.py
+- **Change summary:** `_VECTOR_QUERY` now also returns `node.id`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** For "lower-body session" query on Maya, retrieval surfaces goals,
+  recent history, injuries→joints, excluded exercises, and equipment; whole graph is
+  **not** dumped (PRD §7.5, §9 Retrieval; ARCH §3.4).
+  - **Implementation:** `retrieve('maya', 'Build Maya a lower-body session...')`.
+  - **File(s):** `backend/app/retrieval/retriever.py`.
+  - **Verification status:** **Verified live** (results below) — 29 exercises in
+    context (<50), full neighborhood + trace.
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P2-T2 — GraphRAG retriever (vector + traversal + trace)
+  - **Status:** Complete
+  - **What was completed:** Focused GraphRAG retrieval + graph_trace, verified live.
+  - **Remaining work:** None (typed endpoints are P2-T3).
+
+---
+
+## Validation
+- **Live (real OpenAI), query "Build Maya a lower-body session for this week":**
+  goals (lower-body strength, consistency), preferences, 6 equipment,
+  injuries→joint = Knee pain→knee, recent history (completed upper / missed
+  lower+conditioning), **21** excluded, 8 focused safe candidates ranked by relevance,
+  semantic matches led by the lower-body Goal (0.78), `graph_trace` = 23 triples,
+  exercises-in-context = **29 (<50)**.
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** Safe pool skews upper-body for Maya (knee + equipment
+  limits); `Jumping Jack` (high-impact) violates her preference — to be handled by
+  P3-T2 (preference/validation) and P3-T4 (thin-context recovery), not the retriever.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P2-T2)
+- **Current phase:** Phase 2 — GraphRAG Retrieval
+- **Current ticket:** P2-T3 — `/api/retrieve` + `/api/member/:id/graph` endpoints (next)
+- **Updated ticket status:** P2-T2 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P2-T3

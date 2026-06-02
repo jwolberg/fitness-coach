@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 2 — GraphRAG Retrieval
-- **Current ticket:** P2-T2 (Phase 0 & Phase 1 Complete; P2-T1 Complete)
+- **Current ticket:** P2-T3 (Phase 0 & Phase 1 Complete; P2-T1, P2-T2 Complete)
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
   vector dim is 1536. P2-T1 verified live with REAL OpenAI (54 nodes embedded;
@@ -248,7 +248,9 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     is **not** dumped (PRD §7.5, §9 Retrieval; challenge "Retrieval (GraphRAG)";
     ARCH §3.4).
   - Commit: one commit referencing P2-T2.
-  - Status: Todo
+  - Status: Complete (verified live: lower-body query surfaces goals/prefs/equipment/
+    injuries→knee/recent history; 21 excluded; 8 focused safe candidates ranked by
+    vector relevance; graph_trace=23 triples; only 29 exercises in context, not 50)
 - **P2-T3 — `/api/retrieve` + `/api/member/:id/graph` endpoints & schemas**
   - Objective: Typed Pydantic request/response models and route handlers.
   - Modules / files: `app/api/schemas.py`, `app/api/routes.py`.
@@ -441,12 +443,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P2-T2 — GraphRAG retriever (vector + traversal + trace).
-- **Why this is next:** The embedder + vector index (P2-T1) and the deterministic
-  injury filter (P1-T5) are both in place. P2-T2 combines them: embed the coach query
-  → vector search → resolve to graph nodes → traverse the safety-relevant
-  neighborhood → exclude contraindicated → return a compact context object + a
-  `graph_trace` (the GraphRAG core, feeding generation and explanation).
+- **Start with:** P2-T3 — `/api/retrieve` + `/api/member/:id/graph` endpoints & schemas.
+- **Why this is next:** The retriever works (P2-T2). P2-T3 exposes it over typed REST:
+  Pydantic request/response models for `/api/retrieve` (retrieved_context, graph_trace,
+  semantic_matches) and a `/api/member/:id/graph` neighborhood endpoint — the typed
+  API surface the frontend and reviewers use, and the boundary generation plugs into.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

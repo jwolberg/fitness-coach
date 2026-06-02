@@ -108,6 +108,7 @@ CALL db.index.vector.queryNodes('embeddable_embedding', $k, $vec) YIELD node, sc
 RETURN score,
        labels(node) AS labels,
        coalesce(node.name, node.text, node.description) AS label,
+       node.id AS id,
        elementId(node) AS eid
 ORDER BY score DESC
 """

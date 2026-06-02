@@ -54,6 +54,35 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P2-T2 (GraphRAG retriever: vector + traversal + trace)
+
+- **Vector + graph, not one or the other.** `retrieve()` does a graph-wide vector
+  search, then graph-traverses the member's safety-relevant neighborhood, then
+  applies the deterministic injury/equipment filter (P1-T5). The safe-candidate set
+  is re-ranked by the query's semantic scores (vector relevance) — GraphRAG, not
+  semantic-search-with-extra-steps.
+- **Focused window, never a graph dump.** Caps: 8 semantic matches surfaced, 8 safe
+  candidates, 5 recent sessions. For Maya's lower-body query only **29** exercises
+  appear in context (8 safe + 21 excluded), never all 50; only the member's
+  neighborhood is traversed. `_MEMBER_CONTEXT` uses `CALL {}` subqueries to avoid a
+  cartesian blow-up across the OPTIONAL MATCHes.
+- **`graph_trace` recorded during traversal** as subject-relation-object triples
+  (Member→HAS_INJURY→Injury, Injury→AFFECTS_JOINT→Joint, Exercise→LOADS_JOINT→Joint
+  note=contraindicated). 23 triples for Maya — this is what P3-T3 reads to answer
+  "why?" without re-querying/re-prompting.
+- **Needed `node.id` from the vector index** to intersect semantic hits with the safe
+  set — all `:Embeddable` nodes (Exercise/Injury/Goal/ContextSignal) have an `id`, so
+  `vector_search` now returns it.
+- **Observation for P3:** Maya's safe pool is mostly upper-body (knee injury +
+  equipment limits remove most lower-body options), and `Jumping Jack` is high-impact
+  — conflicting with her "dislikes high-impact" preference. The retriever's job is
+  safety (injury+equipment); **preference conflicts and the thin-pool recovery are
+  P3-T2/P3-T4 concerns** (PRD §7.6/§7.7/§10). Good live stress case.
+- **Validation (live, real OpenAI):** query "Build Maya a lower-body session" →
+  goals/prefs/equipment/injuries→joint(knee)/recent history all surfaced; 21 excluded;
+  semantic matches led by the lower-body goal (0.78) + leg-press/split-squat + knee
+  signal; trace=23; exercises-in-context=29 (<50).
+
 ## 2026-06-02 — P2-T1 (Embedder adapter + node embeddings)
 
 - **DEVIATION (user-directed) — OpenAI-only embeddings, no local fallback.** When
