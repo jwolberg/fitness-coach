@@ -1253,3 +1253,86 @@ contraindicated exercises excluded; `/api/member/:id/graph` returns the neighbor
 - **Updated ticket status:** P3-T3 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P3-T4
+
+---
+---
+
+# Implementation — P3-T4
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket.
+- **Related phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Related ticket(s):** **P3-T4 — LangGraph orchestration pipeline + thin/empty-context recovery**
+
+## Approach
+- **Strategy:** Wire the four stages into a LangGraph `StateGraph` with typed state,
+  enforcing fixed ordering and a conditional thin-context branch.
+- **Key decisions:** `retrieve → (generate|fallback) → validate → explain`; thin =
+  no safe candidates → fallback (no LLM); split `generate_from_context` for reuse.
+
+---
+
+## Implementation Plan
+1. `requirements.txt`: add `langgraph`.
+2. `app/orchestration/state.py` — `PipelineState` TypedDict.
+3. `app/orchestration/pipeline.py` — nodes, conditional routing, `run_workout_pipeline`.
+4. `app/generation/generator.py` — add `generate_from_context`.
+
+**Files created:** `app/orchestration/__init__.py`, `state.py`, `pipeline.py`.
+**Modified:** `requirements.txt`, `app/generation/generator.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/orchestration/pipeline.py
+- **Change summary:** `StateGraph` (retrieve/generate/fallback/validate/explain) with a
+  conditional edge after retrieve; `run_workout_pipeline` returns the assembled result.
+
+### File: backend/app/orchestration/state.py
+- **Change summary:** `PipelineState` typed state.
+
+### File: backend/app/generation/generator.py
+- **Change summary:** Extracted `generate_from_context(ctx, query)`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Fixed pipeline ordering enforced (ARCH §5); empty/thin context recovers
+  gracefully rather than inventing (PRD §6, §7.6; challenge "Resilience"; ARCH §3.3).
+  - **Implementation:** StateGraph ordering + `_route_after_retrieve` → fallback (no LLM).
+  - **File(s):** `backend/app/orchestration/pipeline.py`.
+  - **Verification status:** **Verified** (normal live + thin-context unit).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P3-T4 — LangGraph orchestration pipeline
+  - **Status:** Complete
+  - **What was completed:** Compiled StateGraph + thin-context recovery, verified.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Normal (live, real OpenAI):** status `ok`; workout+explanation+safety present;
+  `passed=True`; no contraindicated in final; grounded explanation.
+- **Thin context (unit, LLM guarded):** routed to fallback, LLM not invoked, status
+  `insufficient_context`, PRD §10 fallback, safe.
+- `py_compile` clean.
+
+---
+
+## Open Issues
+- **Known limitations:** Repair is encapsulated in `validate_and_repair` (single pass)
+  rather than a multi-iteration LangGraph loop — sufficient deterministically.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P3-T4)
+- **Current phase:** Phase 3
+- **Current ticket:** P3-T5 — /api/generate/workout + /api/explain endpoints & schemas (next)
+- **Updated ticket status:** P3-T4 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P3-T5

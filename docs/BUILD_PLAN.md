@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
-- **Current ticket:** P3-T4 (Phases 0, 1, 2 Complete; P3-T1, P3-T2, P3-T3 Complete)
+- **Current ticket:** P3-T5 (Phases 0, 1, 2 Complete; P3-T1..T4 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
@@ -321,7 +321,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     recovers gracefully rather than inventing (PRD §6 stories, §7.6; challenge
     "Resilience"; ARCH §3.3).
   - Commit: one commit referencing P3-T4.
-  - Status: Todo
+  - Status: Complete (verified: StateGraph enforces retrieve→generate|fallback→validate
+    →explain; thin context routes to safe fallback without calling the LLM)
 - **P3-T5 — `/api/generate/workout` + `/api/explain` endpoints & schemas**
   - Objective: Typed endpoints invoking the pipeline; structured logging of query,
     retrieved nodes, LLM calls, validation results, repair attempts, final status.
@@ -448,11 +449,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P3-T4 — LangGraph orchestration pipeline + thin/empty-context recovery.
-- **Why this is next:** The four pipeline stages exist as functions (retrieve →
-  generate → validate → explain). P3-T4 wires them into a `StateGraph` with typed state
-  and a repair loop, enforcing the fixed ordering (ARCH §5) and handling thin/empty
-  retrieval gracefully — the spine the API endpoints (P3-T5) invoke.
+- **Start with:** P3-T5 — `/api/generate/workout` + `/api/explain` endpoints & schemas.
+- **Why this is next:** The orchestration pipeline (P3-T4) and explanation builder
+  (P3-T3) are ready. P3-T5 exposes them as typed endpoints returning the PRD §7.9
+  shapes (workout + explanation + safety_validation; answer + graph_trace) and adds
+  structured logging (PRD §13) — completing Phase 3 and the backend API surface.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

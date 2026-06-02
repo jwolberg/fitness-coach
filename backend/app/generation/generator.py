@@ -17,19 +17,23 @@ from app.retrieval.retriever import retrieve
 logger = logging.getLogger(__name__)
 
 
+def generate_from_context(ctx: dict[str, Any], query: str) -> dict[str, Any]:
+    """Generate a structured workout from an already-retrieved context (raw LLM output)."""
+    user = build_workout_user(ctx, query)
+    workout = get_llm_client().complete_json(WORKOUT_SYSTEM, user)
+    logger.info(
+        "Generated workout (%d exercises, insufficient_safe_options=%s)",
+        len(workout.get("exercises", []) or []),
+        workout.get("insufficient_safe_options"),
+    )
+    return workout
+
+
 def generate_workout(member_id: str, query: str) -> dict[str, Any]:
-    """Generate a structured workout from retrieved context.
+    """Retrieve context and generate a structured workout.
 
     Returns ``{"workout": <dict>, "retrieved_context": <dict>}``. The workout is the
     raw LLM output — it is NOT yet safety-validated (that is P3-T2).
     """
     ctx = retrieve(member_id, query)
-    user = build_workout_user(ctx, query)
-    workout = get_llm_client().complete_json(WORKOUT_SYSTEM, user)
-    logger.info(
-        "Generated workout for '%s' (%d exercises, insufficient_safe_options=%s)",
-        member_id,
-        len(workout.get("exercises", []) or []),
-        workout.get("insufficient_safe_options"),
-    )
-    return {"workout": workout, "retrieved_context": ctx}
+    return {"workout": generate_from_context(ctx, query), "retrieved_context": ctx}

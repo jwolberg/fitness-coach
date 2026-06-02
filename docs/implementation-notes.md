@@ -54,6 +54,25 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P3-T4 (LangGraph orchestration pipeline + thin-context recovery)
+
+- **Added `langgraph==1.2.4`.** `StateGraph` over a typed `PipelineState` wires
+  retrieve → (generate | fallback) → validate → explain, enforcing the fixed ordering
+  (validation always after generation, before response — ARCH §5).
+- **Conditional edge for thin/empty context.** `_route_after_retrieve`: if there are
+  **no safe candidates at all**, route to a deterministic `fallback` node (PRD §10
+  safe fallback) and **skip the LLM entirely** — recovers rather than inventing
+  (PRD/challenge "Resilience"). Verified the LLM is not called on that branch.
+- **Refactor:** split `generate_from_context(ctx, query)` out of `generate_workout`
+  so the pipeline reuses the already-retrieved context (one retrieval per request).
+- **`run_workout_pipeline(member_id, query)`** invokes the compiled graph and returns
+  `{workout, explanation, safety_validation, retrieved_context, status}`.
+  `status` ∈ {`ok`, `insufficient_context`}.
+- **Validation (live + unit):** normal path (real OpenAI) → status `ok`, all stages
+  present, `passed=True`, no contraindicated in final, grounded explanation. Thin path
+  (monkeypatched empty safe_candidates, LLM guarded to raise if called) → routed to
+  fallback, LLM not invoked, status `insufficient_context`, PRD §10 notes, safe.
+
 ## 2026-06-02 — P3-T3 (Explanation builder)
 
 - **Deterministic templating over the recorded `graph_trace` — no LLM, no re-query.**
