@@ -98,8 +98,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
 - **Overall status:** In Progress
-- **Current phase:** Phase 2 — GraphRAG Retrieval
-- **Current ticket:** P2-T3 (Phase 0 & Phase 1 Complete; P2-T1, P2-T2 Complete)
+- **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Current ticket:** P3-T1 (Phases 0, 1, 2 Complete)
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
   vector dim is 1536. P2-T1 verified live with REAL OpenAI (54 nodes embedded;
@@ -259,7 +259,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     `graph_trace`, `semantic_matches`; `nodes`/`edges`) with typed schemas
     (PRD §7.9; challenge "API"; ARCH §3.2).
   - Commit: one commit referencing P2-T3.
-  - Status: Todo
+  - Status: Complete (verified live via TestClient: /api/retrieve returns the exact
+    §7.9 shape; /api/member/maya/graph returns 38 nodes/37 edges; 404 on unknown member)
 
 ---
 
@@ -443,11 +444,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P2-T3 — `/api/retrieve` + `/api/member/:id/graph` endpoints & schemas.
-- **Why this is next:** The retriever works (P2-T2). P2-T3 exposes it over typed REST:
-  Pydantic request/response models for `/api/retrieve` (retrieved_context, graph_trace,
-  semantic_matches) and a `/api/member/:id/graph` neighborhood endpoint — the typed
-  API surface the frontend and reviewers use, and the boundary generation plugs into.
+- **Start with:** P3-T1 — LLM adapter + workout generator.
+- **Why this is next:** Retrieval is exposed over typed REST (Phase 2 done). Phase 3
+  turns the focused context into a recommendation: P3-T1 adds an `LLMClient` adapter
+  and a generator that produces the structured PRD §7.6 workout JSON (title, goal,
+  warm-up, exercises w/ sets·reps·rest, intensity, substitutions, notes) from the
+  retrieved context — the input the deterministic validator (P3-T2) then checks.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

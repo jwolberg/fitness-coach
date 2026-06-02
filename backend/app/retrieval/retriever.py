@@ -129,3 +129,60 @@ def _primary_label(labels: list[str]) -> str | None:
         if label != "Embeddable":
             return label
     return labels[0] if labels else None
+
+
+# Safety-relevant neighborhood for visualization/debugging (PRD §7.9 member graph).
+# Direct member edges + injury→joint + the excluded exercises that load injured joints.
+_MEMBER_GRAPH = """
+MATCH (m:Member {id: $member_id})
+CALL {
+  WITH m
+  MATCH (m)-[r]->(n)
+  WHERE type(r) IN ['HAS_GOAL','HAS_PREFERENCE','HAS_EQUIPMENT_ACCESS',
+                    'HAS_INJURY','HAS_WORKOUT_SESSION','HAS_CONTEXT_SIGNAL']
+  RETURN m AS a, r AS r, n AS b
+  UNION
+  WITH m
+  MATCH (m)-[:HAS_INJURY]->(i:Injury)-[r:AFFECTS_JOINT]->(j:Joint)
+  RETURN i AS a, r AS r, j AS b
+  UNION
+  WITH m
+  MATCH (m)-[:HAS_INJURY]->(:Injury)-[:AFFECTS_JOINT]->(j:Joint)<-[r:LOADS_JOINT]-(e:Exercise)
+  RETURN e AS a, r AS r, j AS b
+}
+RETURN elementId(a) AS a_id, labels(a) AS a_labels, properties(a) AS a_props,
+       type(r) AS rel,
+       elementId(b) AS b_id, labels(b) AS b_labels, properties(b) AS b_props
+"""
+
+
+def _display_label(props: dict[str, Any], labels: list[str]) -> str | None:
+    for key in ("name", "title", "text", "description", "id"):
+        if props.get(key):
+            return str(props[key])
+    return _primary_label(labels)
+
+
+def member_graph(member_id: str) -> dict[str, Any]:
+    """Return the member's safety-relevant neighborhood as {nodes, edges}."""
+    with session() as s:
+        rows = [dict(r) for r in s.run(_MEMBER_GRAPH, member_id=member_id)]
+
+    nodes: dict[str, dict[str, Any]] = {}
+    edges: list[dict[str, str]] = []
+    seen_edges: set[tuple[str, str, str]] = set()
+
+    def add_node(nid: str, labels: list[str], props: dict[str, Any]) -> None:
+        if nid not in nodes:
+            nodes[nid] = {"id": nid, "type": _primary_label(labels),
+                          "label": _display_label(props, labels), "properties": props}
+
+    for row in rows:
+        add_node(row["a_id"], row["a_labels"], row["a_props"])
+        add_node(row["b_id"], row["b_labels"], row["b_props"])
+        key = (row["a_id"], row["b_id"], row["rel"])
+        if key not in seen_edges:
+            seen_edges.add(key)
+            edges.append({"source": row["a_id"], "target": row["b_id"], "type": row["rel"]})
+
+    return {"nodes": list(nodes.values()), "edges": edges}

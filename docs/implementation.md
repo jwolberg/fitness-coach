@@ -931,3 +931,86 @@ the contraindicated-exercise set for the injured member. ✔ All verified live.
 - **Updated ticket status:** P2-T2 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P2-T3
+
+---
+---
+
+# Implementation — P2-T3
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket (completes Phase 2).
+- **Related phase:** Phase 2 — GraphRAG Retrieval
+- **Related ticket(s):** **P2-T3 — `/api/retrieve` + `/api/member/:id/graph` endpoints & schemas**
+
+## Approach
+- **Strategy:** Expose the retriever over typed REST matching PRD §7.9, plus a
+  member-graph neighborhood endpoint for viz/debugging.
+- **Key decisions:** Explicit Pydantic models for trace/matches/nodes/edges; open
+  dicts for variable member data; graph endpoint returns the safety-relevant subgraph
+  (incl. excluded exercises) using `elementId` as the stable node id.
+
+---
+
+## Implementation Plan
+1. `app/api/schemas.py` — request/response models.
+2. `app/retrieval/retriever.py` — add `member_graph()`.
+3. `app/api/routes.py` — `POST /api/retrieve`, `GET /api/member/{id}/graph`.
+
+**Files created:** `app/api/schemas.py`. **Modified:** `app/api/routes.py`, `app/retrieval/retriever.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/api/schemas.py
+- **Change summary:** `RetrieveRequest/Response`, `RetrievedContext`, `GraphTraceEntry`,
+  `SemanticMatch`, `GraphNode/Edge`, `MemberGraphResponse`.
+
+### File: backend/app/api/routes.py
+- **Change summary:** Added `POST /api/retrieve` (404 on unknown member) and
+  `GET /api/member/{member_id}/graph` (404 on empty).
+
+### File: backend/app/retrieval/retriever.py
+- **Change summary:** Added `member_graph()` returning `{nodes, edges}` for the
+  safety-relevant neighborhood.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Endpoints return the PRD §7.9 response shapes (`retrieved_context`,
+  `graph_trace`, `semantic_matches`; `nodes`/`edges`) with typed schemas.
+  - **Implementation:** `RetrieveResponse` + `MemberGraphResponse`.
+  - **File(s):** `backend/app/api/schemas.py`, `backend/app/api/routes.py`.
+  - **Verification status:** **Verified live** (TestClient + real OpenAI).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P2-T3 — endpoints & schemas
+  - **Status:** Complete
+  - **What was completed:** Typed `/api/retrieve` + `/api/member/:id/graph`, verified live.
+  - **Remaining work:** None. **Phase 2 exit criteria met.**
+
+---
+
+## Validation
+- **Live (TestClient, real OpenAI):** `/api/retrieve` → 200, top-level keys exactly
+  `{member_id, retrieved_context, graph_trace, semantic_matches}`; 21 excluded, 8 safe,
+  trace 23, 8 semantic. `/api/member/maya/graph` → 200, 38 nodes / 37 edges across all
+  9 node labels + safety edges (AFFECTS_JOINT, LOADS_JOINT). Both → 404 on unknown member.
+- `py_compile` clean.
+
+---
+
+## Phase 2 Exit Criteria (met)
+`/api/retrieve` returns retrieved context, semantic matches, and a graph trace with
+contraindicated exercises excluded; `/api/member/:id/graph` returns the neighborhood. ✔
+
+---
+
+## BUILD_PLAN Update (P2-T3)
+- **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Current ticket:** P3-T1 — LLM adapter + workout generator (next)
+- **Updated ticket status:** P2-T3 → Complete (Phase 2 Complete)
+- **Any blockers:** None
+- **Recommended next ticket:** P3-T1

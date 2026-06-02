@@ -54,6 +54,28 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P2-T3 (/api/retrieve + /api/member/:id/graph endpoints & schemas)
+
+- **Response matches PRD §7.9 exactly:** `/api/retrieve` → `{member_id,
+  retrieved_context, graph_trace, semantic_matches}`. `retrieve()` returns one dict;
+  the route pops `graph_trace`/`semantic_matches` to the top level and the rest
+  becomes `retrieved_context`.
+- **Typed where it matters, open where data varies.** `GraphTraceEntry`,
+  `SemanticMatch`, `GraphNode`, `GraphEdge` are explicit Pydantic models; member/
+  goal/session objects stay `dict[str, Any]` (synthetic shapes vary) — pragmatic
+  typing per ARCH principle 4 without over-constraining.
+- **`/api/member/:id/graph` returns a safety-relevant subgraph** (not the whole DB):
+  member's direct edges + injury→joint + the excluded exercises that load injured
+  joints — so a viewer can *see* why exercises are excluded (PRD §7.10 nice-to-have
+  "highlight excluded exercises"). `member_graph()` assembles nodes/edges in Python
+  from relationship rows (dedup by element id), using `elementId` as the stable node id.
+- **404s** for unknown members on both endpoints (`ValueError`→404 on retrieve;
+  empty neighborhood→404 on graph).
+- **Validation (live, TestClient + real OpenAI):** `/api/retrieve` 200 with the exact
+  top-level keys, 21 excluded / 8 safe / trace 23 / 8 semantic; `/api/member/maya/graph`
+  200 with 38 nodes + 37 edges covering all 9 node labels and the safety edge types;
+  both endpoints 404 on a bogus member. **Phase 2 exit criteria met.**
+
 ## 2026-06-02 — P2-T2 (GraphRAG retriever: vector + traversal + trace)
 
 - **Vector + graph, not one or the other.** `retrieve()` does a graph-wide vector
