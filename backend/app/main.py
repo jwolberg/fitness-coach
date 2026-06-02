@@ -15,6 +15,7 @@ from fastapi import FastAPI
 
 from app.api.routes import router
 from app.graph.client import close_driver, session
+from app.graph.schema import apply_schema
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -32,6 +33,10 @@ def _connect_to_graph() -> None:
             with session() as s:
                 s.run("RETURN 1").consume()
             logger.info("Connected to Neo4j (opened a session on attempt %d)", attempt)
+            try:
+                apply_schema()  # idempotent: constraints + vector index (P1-T1)
+            except Exception as exc:  # noqa: BLE001 - schema failure shouldn't crash the API
+                logger.error("Failed to apply graph schema: %s", exc)
             return
         except Exception as exc:  # noqa: BLE001 - log and retry any driver/connection error
             logger.warning(

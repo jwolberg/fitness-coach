@@ -53,3 +53,38 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   (VALID; resolves `neo4j` + `api`), import-checked the driver + app, and confirmed
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
+
+## 2026-06-02 — P1-T1 (Graph schema, constraints & vector index)
+
+- **One uniqueness constraint per node label (16 total).** Context/member-scoped
+  nodes keyed by `id`; ontology/library nodes (`Joint`, `MuscleGroup`,
+  `MovementPattern`, `Equipment`) keyed by `name` — these are natural singletons,
+  so name is the stable key and lets ingestion `MERGE` on it.
+- **Single vector index via a shared `:Embeddable` label.** Neo4j vector indexes
+  are scoped to one label, but PRD §7.5 embeds several node types (signals,
+  injuries, goals, exercises). Putting a secondary `:Embeddable` label + `embedding`
+  property on those nodes lets ONE index (`embeddable_embedding`, cosine) span them
+  and supports ARCH §3.7's "one Cypher query mixes vector similarity + traversal."
+  Embeddings themselves are written in P2-T1.
+- **Embedding width is configurable** (`EMBEDDING_DIM`, default 384 for local
+  all-MiniLM-L6-v2; 1536 for OpenAI). The vector index is created with this
+  dimension; the embedder (P2-T1) must match it. Added to `config.py` + `.env.example`.
+- **Edges aren't constrained.** Neo4j relationships are schemaless and relationship
+  uniqueness constraints are Enterprise-only; `EDGE_TYPES` is a documented inventory
+  (all 14 PRD §7.1 edges) for ingestion + README, not DDL.
+- **Statement builders are pure functions** (`constraint_statements`,
+  `vector_index_statement`) returning Cypher strings, so they're unit-testable
+  without a live DB; `apply_schema()` executes them. All statements use
+  `IF NOT EXISTS` → idempotent (acceptance requirement).
+- **DEVIATION (file beyond ticket's listed files):** wired `apply_schema()` into the
+  `app/main.py` startup lifespan (runs once after a successful Neo4j connect; schema
+  failure logs but doesn't crash). The ticket listed only `schema.py`/`client.py`,
+  but without a caller the index/constraints are never created. Wiring it at boot is
+  the smallest way to satisfy "constraints + vector index created" and keeps the API
+  self-bootstrapping; idempotent so re-runs are free. The dedicated seed step
+  (P5-T3) can still call `apply_schema()` explicitly.
+- **Validation limit (same as P0-T2):** no Docker daemon in the build env, so the
+  statements were **not** executed against a live Neo4j. Verified the builders emit
+  16 idempotent constraints + a well-formed cosine vector index (dim 384) covering
+  all §7.1 labels, and that the app still boots/serves `/health`. Live schema
+  creation is pending `docker compose up`.

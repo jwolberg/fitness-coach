@@ -99,8 +99,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
-- **Current ticket:** P1-T1 (Phase 0 Complete: P0-T1, P0-T2)
-- **Blockers:** None (follow-up: run live `docker compose up` once a Docker daemon is available — not exercised in the build environment)
+- **Current ticket:** P1-T2 (Phase 0 Complete: P0-T1, P0-T2; P1-T1 Complete)
+- **Blockers:** None (follow-up: run live `docker compose up` once a Docker daemon is available — schema/compose not exercised live in the build environment)
 
 ---
 
@@ -159,7 +159,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: All PRD §7.1 node/edge types representable; constraints + vector
     index created idempotently (PRD §7.1; ARCH §3.7, §4).
   - Commit: one commit referencing P1-T1.
-  - Status: Todo
+  - Status: Complete (16 idempotent constraints + cosine vector index over
+    `:Embeddable`; builders validated, live execution pending a Docker daemon)
 - **P1-T2 — Exercise ingestion from `exercises.json`**
   - Objective: Parse `exercises.json`; create `Exercise` nodes and edges to
     `Joint`, `MuscleGroup`, `Equipment`, `MovementPattern`, and `HAS_BILATERAL_PAIR`.
@@ -427,11 +428,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P1-T1 — Graph schema, constraints & vector index.
-- **Why this is next:** Phase 0 is Complete (backend skeleton + Compose/Neo4j
-  substrate). P1-T1 depends on P0-T2 and is the first Phase 1 link: it defines the
-  node/edge labels, uniqueness constraints, and the Neo4j vector index that every
-  ingestion (P1-T2/T3/T4), retrieval (Phase 2), and safety (P1-T5) ticket builds on.
+- **Start with:** P1-T2 — Exercise ingestion from `exercises.json`.
+- **Why this is next:** The schema/constraints/vector index (P1-T1) are in place, so
+  the graph can now be populated. P1-T2 ingests the 50 exercises and their edges to
+  Joint/MuscleGroup/Equipment/MovementPattern (+ bilateral pairs) — the exercise
+  library every later member-context, retrieval, and safety ticket reasons over.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

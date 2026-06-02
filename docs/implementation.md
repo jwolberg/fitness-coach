@@ -266,3 +266,106 @@
 - **Updated ticket status:** P0-T2 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P1-T1
+
+---
+---
+
+# Implementation — P1-T1
+
+## Scope Implemented
+- **Requested scope:** "continue the build" → next ticket in dependency order.
+- **Related phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Related ticket(s):** **P1-T1 — Graph schema, constraints & vector index**
+
+## Approach
+- **High-level strategy:** Make every PRD §7.1 node/edge type representable and
+  create uniqueness constraints + a native vector index, idempotently.
+- **Key decisions:**
+  - One uniqueness constraint per node label (16); `id` for context nodes, `name`
+    for ontology nodes (Joint/MuscleGroup/MovementPattern/Equipment).
+  - Single vector index over a shared `:Embeddable` label (cosine), so one index
+    spans signals/injuries/goals/exercises.
+  - Configurable embedding width (`EMBEDDING_DIM`, default 384).
+  - Pure statement builders + idempotent (`IF NOT EXISTS`) execution.
+- **Assumptions:** Local embedding model (384 dims) is the default; the embedder
+  (P2-T1) must match `EMBEDDING_DIM`.
+
+---
+
+## Implementation Plan
+1. Add `embedding_dim` to `app/config.py` + `EMBEDDING_DIM` to `.env.example`.
+2. `app/graph/schema.py` — `NODE_KEYS`, `EDGE_TYPES`, `constraint_statements()`,
+   `vector_index_statement()`, `apply_schema()`.
+3. Wire `apply_schema()` into `app/main.py` startup (idempotent, after connect).
+
+**Files created:** `app/graph/schema.py`. **Modified:** `app/config.py`,
+`.env.example`, `app/main.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/graph/schema.py
+- **Change summary:** Node/edge inventory + idempotent constraint and vector-index
+  Cypher builders + `apply_schema()`. 16 uniqueness constraints; one `:Embeddable`
+  cosine vector index named `embeddable_embedding`.
+
+### File: backend/app/main.py
+- **Change summary:** Startup lifespan now calls `apply_schema()` after a successful
+  Neo4j connection (schema failure logged, not fatal).
+
+### File: backend/app/config.py
+- **Change summary:** Added `embedding_dim` (env `EMBEDDING_DIM`, default 384).
+
+### File: .env.example
+- **Change summary:** Documented `EMBEDDING_DIM`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** All PRD §7.1 node/edge types representable; constraints + vector
+  index created idempotently (PRD §7.1; ARCH §3.7, §4).
+  - **Implementation:** `NODE_KEYS` covers all 16 labels (constraints), `EDGE_TYPES`
+    documents all 14 edges (schemaless in Neo4j), and `vector_index_statement` creates
+    the cosine index — all with `IF NOT EXISTS`.
+  - **File(s):** `backend/app/graph/schema.py`.
+  - **Verification status:** Builders validated (16 idempotent constraints + well-formed
+    vector index, dim 384); **live execution against Neo4j pending a Docker daemon**.
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P1-T1 — Graph schema, constraints & vector index
+  - **Status:** Complete
+  - **What was completed:** Schema module with idempotent constraints + vector index,
+    embedding-dim config, and boot-time `apply_schema()` wiring.
+  - **Remaining work:** Live verification once `docker compose up` can run.
+
+---
+
+## Validation
+- `constraint_statements()` → 16 statements, all `IF NOT EXISTS` + `IS UNIQUE`;
+  spot-checked `Joint.name` and `Member.id`.
+- `vector_index_statement(384)` → well-formed `:Embeddable.embedding` cosine index.
+- `EDGE_TYPES` → 14 (matches PRD §7.1). `apply_schema` callable.
+- `py_compile` clean; app still boots and serves `/health` 200 (schema apply skipped
+  gracefully when Neo4j is down).
+- **Not run:** live `apply_schema()` against Neo4j (daemon down). Verify with
+  `docker compose up` then check `SHOW CONSTRAINTS` / `SHOW INDEXES` in Neo4j Browser.
+
+---
+
+## Open Issues
+- **Known limitations:** Constraints/index unexecuted against a live DB in this env.
+  Nodes don't yet get the `:Embeddable` label or `embedding` property — that's P2-T1.
+- **Unresolved edge cases:** None for this scope.
+- **Blockers:** None. Follow-up: live schema verification under Docker.
+
+---
+
+## BUILD_PLAN Update (P1-T1)
+- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Current ticket:** P1-T2 — Exercise ingestion from `exercises.json` (next)
+- **Updated ticket status:** P1-T1 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P1-T2
