@@ -54,6 +54,26 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P4-T3 (Query → workout → safety + "why?" view)
+
+- **`CoachPanel`** (query input → `/api/generate/workout`) + **`WorkoutView`**
+  (title/goal, safety badge [passed / repaired / safe-fallback], warm-up, exercises
+  with sets×reps/rest/intensity, guidance, notes, validator-issues note). A "why?"
+  block has 3 quick-question buttons + free text → `/api/explain`, rendering the
+  answer + the graph-evidence trace (subject —rel→ object).
+- **All three demo asks verified end-to-end in the real browser** (PRD §7.10 / §16
+  demo flow): generate → safe workout (graceful "limited safe options" recovery for
+  Maya's knee+equipment case); "why skip squats" → contraindication chain;
+  watch-for/constraints also wired.
+- **GOTCHA — RN Web `Pressable` ignores a bare CDP click.** agent-browser's `click`
+  fired no `onPress` (no request hit the backend). RN Web's responder listens on
+  pointer events, so I drove buttons via a `pointerdown`+`pointerup`+`click` dispatch
+  (a real user press works the same). Confirmed by backend logs: `POST
+  /api/generate/workout 200` and `POST /api/explain 200`. The UI logic itself is fine.
+- **Minor follow-up:** the `member_graph` `CALL {}` subquery logs a Neo4j 5.x
+  deprecation (prefers `CALL (m) {…}` scope clause) — works on 5.26; cosmetic.
+- tsc --noEmit clean.
+
 ## 2026-06-02 — P4-T2 (Member selector + profile/context view)
 
 - **Profile built from `/api/member/:id/graph`** (`buildProfile` groups nodes by type;

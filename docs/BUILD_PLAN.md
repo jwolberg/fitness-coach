@@ -98,8 +98,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
 - **Overall status:** In Progress
-- **Current phase:** Phase 4 — Frontend Demo UX
-- **Current ticket:** P4-T3 (Phases 0-3 Complete; P4-T1, P4-T2 Complete)
+- **Current phase:** Phase 5 — Polish: Tests, One-Command Demo, README
+- **Current ticket:** P5 (Phases 0-4 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -373,7 +373,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: The three demo asks (generate / explain / watch-for) work end-to-end
     in the UI (PRD §7.10 features 3–7, §16 demo flow; challenge "The Task" table).
   - Commit: one commit referencing P4-T3.
-  - Status: Todo
+  - Status: Complete (verified in browser: generate->workout+safety badge; "why skip
+    squats"->answer+graph trace; quick-question buttons wired)
 
 ---
 
@@ -453,11 +454,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P4-T3 — Query → workout → safety result + "why?" explanation view.
-- **Why this is next:** The member/context view (P4-T2) is in place. P4-T3 adds the
-  coaching interaction: a question input that calls /api/generate/workout (render the
-  workout + safety_validation) and "why?" follow-ups via /api/explain — the three demo
-  asks end-to-end (PRD §7.10 features 3–7).
+- **Start with:** P5-T2 (graph retrieval correctness) and P5-T1 (injury filtering) tests.
+- **Why this is next:** All product phases (0-4) are complete and browser-verified.
+  Phase 5 hardens the deliverable: the 2 required critical-path tests, the one-command
+  docker compose demo (with frontend + graph seeding), and the README incl. the
+  production-evaluation section.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

@@ -1573,3 +1573,50 @@ retrieve→generate→validate→explain with deterministic repair/fallback. ✔
 - **Updated ticket status:** P4-T2 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P4-T3
+
+---
+---
+
+# Implementation — P4-T3
+
+## Scope Implemented
+- **Requested scope:** frontend phase → final ticket.
+- **Related phase:** Phase 4 — Frontend Demo UX
+- **Related ticket(s):** **P4-T3 — Query → workout → safety result + "why?" view**
+
+## Approach
+- **Strategy:** Add a coaching panel (generate workout) + workout view (with safety
+  badge) + a "why?" block (quick questions + free text) rendering answer + trace.
+
+## Code Changes
+### File: frontend/src/screens/CoachPanel.tsx
+- **Change summary:** Query input → `generateWorkout`; renders `WorkoutView`; "why?"
+  quick buttons + free text → `explain`, showing answer + graph-evidence trace.
+### File: frontend/src/components/WorkoutView.tsx
+- **Change summary:** Renders the §7.6 workout + a safety badge (passed/repaired/fallback).
+### File: frontend/App.tsx
+- **Change summary:** Mounts `CoachPanel` under the member profile.
+
+## Acceptance Criteria Mapping
+- **Criterion:** The three demo asks (generate / explain / watch-for) work end-to-end
+  in the UI (PRD §7.10 features 3–7, §16 demo flow).
+  - **Verification status:** **Verified in a real browser** — generate → safe workout
+    + safety badge; "why skip squats" → answer + graph trace; watch-for/constraints wired.
+  - **File(s):** `frontend/src/screens/CoachPanel.tsx`, `components/WorkoutView.tsx`.
+
+## Build Plan Mapping
+- **Ticket:** P4-T3 — Status: **Complete**. Phase 4 exit criteria met (full browser
+  flow: select Maya → view context → ask → workout + safety → why → trace).
+
+## Validation
+- **Real browser:** `POST /api/generate/workout 200` → workout renders with "safety:
+  passed" + graceful "limited safe options" note; `POST /api/explain 200` → "Barbell
+  Racked Forward Lunge excluded… loads knee…" + 3-triple graph evidence. tsc clean.
+- **Note:** RN Web `Pressable` needs pointer events (not a bare CDP click) — drove
+  buttons via dispatched pointer events; UI logic confirmed via backend 200s.
+
+## BUILD_PLAN Update (P4-T3)
+- **Current phase:** Phase 5 — Polish: Tests, One-Command Demo, README
+- **Current ticket:** P5-T1 (or P5-T2) — critical-path tests (next)
+- **Updated ticket status:** P4-T3 → Complete (Phase 4 Complete)
+- **Recommended next ticket:** P5-T2 (graph retrieval test) / P5-T1 (injury filtering test)

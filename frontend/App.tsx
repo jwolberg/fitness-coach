@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { colors } from './src/components/ui';
+import { CoachPanel } from './src/screens/CoachPanel';
 import { MemberScreen } from './src/screens/MemberScreen';
 
 // One strong synthetic member (PRD §16, depth over breadth). The selector is built
@@ -30,6 +31,7 @@ export default function App() {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <MemberScreen memberId={memberId} />
+        <CoachPanel memberId={memberId} />
       </ScrollView>
       <StatusBar style="auto" />
     </View>
