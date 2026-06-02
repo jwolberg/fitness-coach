@@ -467,3 +467,103 @@
 - **Updated ticket status:** P1-T2 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P1-T3
+
+---
+---
+
+# Implementation — P1-T3
+
+## Scope Implemented
+- **Requested scope:** "continue the build" / "keep going" → next ticket in order.
+- **Related phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Related ticket(s):** **P1-T3 — Synthetic member data + profile ingestion (Maya)**
+
+## Approach
+- **High-level strategy:** Author the Maya fixture (PRD §16) and ingest her
+  structured profile, linking the member to goals, preferences, equipment access,
+  injuries (→ joints), and workout-history sessions.
+- **Key decisions:**
+  - Equipment/joint names aligned to the `exercises.json` vocabulary so filters match.
+  - Adherence as Member properties + per-session status (no Adherence node in §7.1).
+  - Workout history = `WorkoutSession` + new `HAS_WORKOUT_SESSION` edge (status-bearing);
+    plus new `HAS_EQUIPMENT_ACCESS` edge — both documented extensions beyond §7.1.
+  - Goals + injuries tagged `:Embeddable` (vectors in P2-T1).
+  - `context_signals` left for P1-T4 (fixture carries raw text + mention hints).
+- **Assumptions:** Maya fixture default path `backend/data/members/maya.json`,
+  overridable via `MEMBER_PATH`.
+
+---
+
+## Implementation Plan
+1. `backend/data/members/maya.json` — fixture per PRD §16.
+2. `app/graph/schema.py` — add `HAS_EQUIPMENT_ACCESS`, `HAS_WORKOUT_SESSION` to `EDGE_TYPES`.
+3. `app/ingestion/members.py` — `load_member`, `member_properties`, `ingest_member`.
+4. Validate offline + live.
+
+**Files created:** `backend/data/members/maya.json`, `app/ingestion/members.py`.
+**Modified:** `app/graph/schema.py`.
+
+---
+
+## Code Changes
+
+### File: backend/data/members/maya.json
+- **Change summary:** Synthetic Maya fixture — profile, 2 goals, 2 preferences,
+  6 equipment, 1 knee injury (affects `knee`), 3 history sessions (1 completed /
+  2 missed), 65% adherence, and a chat context signal (for P1-T4).
+
+### File: backend/app/ingestion/members.py
+- **Change summary:** Idempotent MERGE-based ingestion of the structured profile:
+  `Member` + `HAS_GOAL`/`HAS_PREFERENCE`/`HAS_EQUIPMENT_ACCESS`/`HAS_INJURY`
+  (→`AFFECTS_JOINT`→`Joint`)/`HAS_WORKOUT_SESSION`. Goals/injuries tagged `:Embeddable`.
+
+### File: backend/app/graph/schema.py
+- **Change summary:** Added the two extension edges to the documented `EDGE_TYPES`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Maya present with goals, preferences, equipment, workout history,
+  adherence, and `HAS_INJURY → Injury → AFFECTS_JOINT → Joint`; synthetic only
+  (PRD §7.3, §16, §9 steps 5–9; §4 non-goal "real data").
+  - **Implementation:** `ingest_member()` creates all of the above; adherence on
+    Member props + session statuses; fixture is fully synthetic.
+  - **File(s):** `backend/app/ingestion/members.py`, `backend/data/members/maya.json`.
+  - **Verification status:** **Verified live** (counts + traversal below).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P1-T3 — Synthetic member data + profile ingestion (Maya)
+  - **Status:** Complete
+  - **What was completed:** Maya fixture + structured-profile ingestion, idempotent,
+    verified against a live DB; the contraindication data path already resolves.
+  - **Remaining work:** None. (Unstructured chat signal structuring is P1-T4.)
+
+---
+
+## Validation
+- **Offline:** fixture loads (member `maya`); `member_properties` flattens name +
+  adherence; 2 goals / 6 equipment / 3 sessions; new edges present in `EDGE_TYPES`; `py_compile` clean.
+- **Live (Neo4j):** after `apply_schema` + `ingest_exercises` + `ingest_member` (×2):
+  - Member 1; HAS_GOAL 2; HAS_PREFERENCE 2; HAS_EQUIPMENT_ACCESS 6; HAS_INJURY 1; HAS_WORKOUT_SESSION 3.
+  - `Injury → Joint` = `[knee]`.
+  - `Member → Injury → Joint ← Exercise` (contraindication path) = **21** distinct exercises (= all knee-loading exercises).
+  - Idempotent: counts unchanged after the second ingest.
+
+---
+
+## Open Issues
+- **Known limitations:** Chat signal not yet structured into graph nodes (P1-T4).
+  A single seeded member (Maya), by design (depth over breadth).
+- **Unresolved edge cases:** None for this scope.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P1-T3)
+- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Current ticket:** P1-T4 — Unstructured signal structuring (next)
+- **Updated ticket status:** P1-T3 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P1-T4

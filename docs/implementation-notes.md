@@ -54,6 +54,44 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P1-T3 (Synthetic member data + profile ingestion: Maya)
+
+- **Fixture at `backend/data/members/maya.json`** matching PRD §16 (goal, knee
+  injury, equipment, glute preference, recent history, 65% adherence, chat signal).
+  Synthetic only.
+- **Equipment + joint names aligned to `exercises.json` vocabulary** so the
+  contraindication/equipment filters match later: knee → `knee`; equipment mapped
+  to real terms (`Dumbbell`, `Resistance Band - Loop`/`- With Handles`,
+  `Flat Bench`, `Cable Resistance Machine`, `Handle Attachment`). Maya intentionally
+  has **no Barbell**, so barbell squats are excluded by both knee injury and missing
+  equipment — convenient for the demo's "why skip barbell squats?".
+- **Adherence modeled as Member properties** (`adherence_rate=0.65`,
+  `adherence_window`, `adherence_missed_last_week=2`) PLUS per-session status — PRD
+  §7.1 has no Adherence node, and properties + session granularity cover the
+  "surface adherence trend" story without inventing a node type.
+- **DECISION — Workout history uses `WorkoutSession` + new `HAS_WORKOUT_SESSION` edge.**
+  History entries need a completed/missed status; §7.1's `COMPLETED_WORKOUT`/`Workout`
+  only express completion. So each history slot is a `WorkoutSession {status,date,focus}`
+  linked by `HAS_WORKOUT_SESSION`; `COMPLETED_WORKOUT`/`Workout`/`CONTAINS_EXERCISE`
+  stay reserved for generated/logged workouts (Phase 3).
+- **DECISION — added `HAS_EQUIPMENT_ACCESS` (Member→Equipment).** §7.1 only defines
+  `Exercise USES_EQUIPMENT`, but retrieval must know the member's available equipment.
+  Both new edges are documented in `schema.EDGE_TYPES` as extensions beyond the §7.1
+  minimum (PRD §7.1 says "at minimum").
+- **Goals + injuries tagged `:Embeddable`** here (vectors written in P2-T1), matching
+  PRD §7.5's embeddable set (signals/injuries/goals/exercises).
+- **SCOPE — `context_signals` left for P1-T4.** The fixture carries the raw chat text
+  (+ `mentions_injury_id`/`mentions_goal_id` hints), but `members.py` does NOT create
+  `ContextSignal`/`MENTIONS_*`; that's P1-T4 (`signals.py`).
+- **Validation:** offline (fixture loads; props/edges well-formed) + **live** against
+  Neo4j: Maya with 2 goals, 2 preferences, 6 equipment, 1 injury, 3 sessions;
+  `Injury→Joint=[knee]`; the `Member→Injury→Joint←Exercise` traversal returns **21**
+  contraindicated exercises (= the 21 knee-loading exercises). Idempotent (ingested
+  twice, no doubling).
+- **Env hiccup:** the harness task temp fs briefly hit 0MB (ENOSPC) mid-run; worked
+  around by minimizing stdout and writing results to a file. Shared Docker/temp
+  cleanup was (correctly) blocked as out-of-scope; main disk had headroom.
+
 ## 2026-06-02 — LIVE validation (closes the "pending Docker daemon" caveats)
 
 The Docker daemon became available, so the deferred end-to-end checks for P0-T2,

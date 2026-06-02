@@ -99,10 +99,10 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
-- **Current ticket:** P1-T3 (Complete: P0-T1, P0-T2, P1-T1, P1-T2)
-- **Blockers:** None. P0-T2/P1-T1/P1-T2 verified live against `neo4j:5.26-community`
-  via `docker compose up` (50 exercises + edges ingested idempotently; 16 constraints
-  + vector index; API connects on boot; `/health` 200).
+- **Current ticket:** P1-T4 (Complete: P0-T1, P0-T2, P1-T1, P1-T2, P1-T3)
+- **Blockers:** None. All shipped tickets verified live against `neo4j:5.26-community`.
+  Maya ingested; the `Member→Injury→Joint←Exercise` traversal returns 21
+  contraindicated (knee-loading) exercises.
 
 ---
 
@@ -184,7 +184,10 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
     adherence, and `HAS_INJURY → Injury → AFFECTS_JOINT → Joint`; synthetic only
     (PRD §7.3, §16, §9 steps 5–9; §4 non-goal "real data").
   - Commit: one commit referencing P1-T3.
-  - Status: Todo
+  - Status: Complete (verified live: Maya + 2 goals/2 prefs/6 equipment/1 injury/3
+    sessions, idempotent; injury→joint=[knee]; contraindication path resolves to 21
+    knee-loading exercises). Added extension edges `HAS_EQUIPMENT_ACCESS`,
+    `HAS_WORKOUT_SESSION`. Chat-signal structuring deferred to P1-T4.
 - **P1-T4 — Unstructured signal structuring**
   - Objective: Turn a free-text signal (e.g. "my knee felt weird after lunges…")
     into a `ContextSignal` plus derived `Injury`/`Condition` and `MENTIONS_*` edges.
@@ -431,12 +434,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P1-T3 — Synthetic member data + profile ingestion (Maya).
-- **Why this is next:** The exercise library is ingested (P1-T2). P1-T3 adds the
-  member side of the graph — Maya's profile, goals, preferences, equipment access,
-  workout history/adherence, and `HAS_INJURY → Injury → AFFECTS_JOINT → Joint` —
-  which connects to the exercise library and unlocks the deterministic injury filter
-  (P1-T5) and all of retrieval/generation.
+- **Start with:** P1-T4 — Unstructured signal structuring.
+- **Why this is next:** Maya's structured profile is in the graph (P1-T3), and her
+  fixture already carries the raw chat signal. P1-T4 turns that free text into a
+  `ContextSignal` node plus `MENTIONS_INJURY`/`MENTIONS_GOAL` edges — demonstrating
+  the "raw signal → structured graph" capability (challenge "Ingestion") and feeding
+  the semantic side of GraphRAG retrieval (Phase 2).
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

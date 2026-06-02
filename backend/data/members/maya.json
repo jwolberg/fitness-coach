@@ -1,0 +1,91 @@
+{
+  "id": "maya",
+  "name": "Maya",
+  "profile": {
+    "training_age": "intermediate",
+    "notes": "Returning to consistent training after a layoff; rebuilding lower-body strength."
+  },
+  "adherence": {
+    "rate": 0.65,
+    "window": "past_month",
+    "missed_last_week": 2
+  },
+  "goals": [
+    {
+      "id": "maya-goal-lower-body-strength",
+      "description": "Build lower-body strength",
+      "focus": "lower_body",
+      "category": "strength"
+    },
+    {
+      "id": "maya-goal-consistency",
+      "description": "Return to consistent training",
+      "focus": "adherence",
+      "category": "habit"
+    }
+  ],
+  "preferences": [
+    {
+      "id": "maya-pref-glutes",
+      "kind": "like",
+      "tag": "glute_focused",
+      "description": "Enjoys glute-focused workouts"
+    },
+    {
+      "id": "maya-pref-no-high-impact",
+      "kind": "dislike",
+      "tag": "high_impact",
+      "description": "Dislikes high-impact movements"
+    }
+  ],
+  "equipment_access": [
+    "Dumbbell",
+    "Resistance Band - Loop",
+    "Resistance Band - With Handles",
+    "Flat Bench",
+    "Cable Resistance Machine",
+    "Handle Attachment"
+  ],
+  "injuries": [
+    {
+      "id": "maya-injury-knee",
+      "name": "Knee pain",
+      "description": "Recent knee pain aggravated by lunges and deep squats",
+      "status": "active",
+      "affects_joints": ["knee"]
+    }
+  ],
+  "workout_history": [
+    {
+      "id": "maya-session-upper-2026-05-30",
+      "title": "Upper-body session",
+      "status": "completed",
+      "focus": "upper",
+      "date": "2026-05-30"
+    },
+    {
+      "id": "maya-session-lower-2026-05-28",
+      "title": "Lower-body session",
+      "status": "missed",
+      "focus": "lower",
+      "date": "2026-05-28"
+    },
+    {
+      "id": "maya-session-conditioning-2026-05-26",
+      "title": "Conditioning session",
+      "status": "missed",
+      "focus": "conditioning",
+      "date": "2026-05-26"
+    }
+  ],
+  "context_signals": [
+    {
+      "id": "maya-signal-knee-lunges",
+      "kind": "chat",
+      "text": "My knee felt weird after lunges, but I still want to train legs this week.",
+      "date": "2026-06-01",
+      "mentions_injury_id": "maya-injury-knee",
+      "mentions_goal_id": "maya-goal-lower-body-strength"
+    }
+  ]
+}

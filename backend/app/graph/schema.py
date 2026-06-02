@@ -40,9 +40,10 @@ NODE_KEYS: dict[str, str] = {
     "BiometricSignal": "id",
 }
 
-# Documented edge inventory (PRD §7.1). Relationship types need no constraints in
-# Neo4j; this list is the source of truth ingestion and the README reference.
+# Documented edge inventory. Relationship types need no constraints in Neo4j; this
+# list is the source of truth ingestion and the README reference.
 EDGE_TYPES: list[str] = [
+    # --- PRD §7.1 core edges ---
     "HAS_GOAL",
     "HAS_PREFERENCE",
     "HAS_INJURY",
@@ -57,6 +58,14 @@ EDGE_TYPES: list[str] = [
     "MENTIONS_INJURY",
     "MENTIONS_GOAL",
     "HAS_BILATERAL_PAIR",
+    # --- Extensions beyond the §7.1 minimum (PRD §7.1 is "at minimum") ---
+    # Member's available equipment (challenge/PRD retrieval expands to "available
+    # equipment"); §7.1 only defines Exercise USES_EQUIPMENT.
+    "HAS_EQUIPMENT_ACCESS",
+    # Member's scheduled/performed sessions with a status (completed/missed), the
+    # basis for adherence/recent-history retrieval. COMPLETED_WORKOUT/Workout stay
+    # reserved for generated/logged workouts (Phase 3).
+    "HAS_WORKOUT_SESSION",
 ]
 
 # Embeddable nodes carry a shared secondary label so one vector index spans them
