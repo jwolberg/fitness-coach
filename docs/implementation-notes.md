@@ -71,14 +71,15 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   edges; signals use `text`, injuries/goals use `description`.
 - **Vectors written via `db.create.setNodeVectorProperty`** (the idiomatic way to
   populate a Neo4j vector index); `vector_search` uses `db.index.vector.queryNodes`.
-- **VALIDATION LIMIT — no OpenAI key in this env**, so the live OpenAI HTTP call is
-  **unverified**. Everything else verified against live Neo4j using a deterministic
-  hash **stub** embedder (1536-d): all **54** `:Embeddable` nodes embedded, stored
-  vectors are length 1536, and a query with a node's exact composed text ranks that
-  node **#1 at score 1.0** (proves the index + cosine path). `compose_node_text` and
-  the missing-key guard are unit-checked. Follow-up: run once with a real key
-  (`embed_graph_nodes()` + `vector_search`) to confirm semantic ranking; the API
-  Docker image also needs a rebuild to include `openai`.
+- **VALIDATION — now verified live with REAL OpenAI.** The user added the key to the
+  macOS keychain (`fitness-OPENAI_API_KEY`), pulled into `.env`. With the real
+  `text-embedding-3-small`: all **54** `:Embeddable` nodes embedded at 1536-d, and a
+  semantic query "my knee hurts after doing lunges and squats" ranked **Knee pain**
+  (injury, 0.891), then the knee/lunge chat signal (0.826), then lunge/knee-drive
+  exercises — i.e., the vector search surfaces the right injury + movements. Earlier
+  stub run also confirmed the index/cosine path (exact-text → #1 @ 1.0).
+  Remaining follow-up: the API Docker image needs a rebuild to include `openai`
+  (handled when the API uses embeddings, P2-T3/P3).
 - **Note:** `EMBEDDING_DIM` change to 1536 means any pre-existing dim-384 vector index
   must be dropped (wipe the Neo4j volume: `docker compose down -v`) before re-seeding.
 

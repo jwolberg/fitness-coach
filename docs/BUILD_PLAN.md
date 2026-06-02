@@ -101,9 +101,9 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 - **Current phase:** Phase 2 — GraphRAG Retrieval
 - **Current ticket:** P2-T2 (Phase 0 & Phase 1 Complete; P2-T1 Complete)
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
-  fallback) — the demo now requires `OPENAI_API_KEY`; vector dim is 1536. P2-T1
-  plumbing verified live via a stub embedder (no key in build env); the real OpenAI
-  call still needs a one-time key run.
+  fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
+  vector dim is 1536. P2-T1 verified live with REAL OpenAI (54 nodes embedded;
+  semantic query surfaces the knee injury + lunge exercises).
 
 ---
 
@@ -235,8 +235,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Commit: one commit referencing P2-T1.
   - Status: Complete (Embedder seam + node embedding into the vector index + vector
     search; plumbing verified live via stub — 54 nodes @ 1536-d, exact-text query
-    ranks #1 @ 1.0). DEVIATION: OpenAI-only (no local), demo needs OPENAI_API_KEY;
-    live OpenAI call unverified (no key in build env).
+    ranks #1 @ 1.0; real OpenAI run: semantic query surfaces knee injury + lunges).
+    DEVIATION: OpenAI-only (no local), demo needs OPENAI_API_KEY.
 - **P2-T2 — GraphRAG retriever (vector + traversal + trace)**
   - Objective: Embed query → vector search → resolve to graph nodes → traverse
     safety-relevant neighborhood → exclude contraindicated → return compact

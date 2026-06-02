@@ -803,27 +803,29 @@ the contraindicated-exercise set for the injured member. ✔ All verified live.
   - **Implementation:** `embed_graph_nodes()` writes a vector onto every `:Embeddable`
     node; `vector_search()` returns ranked nodes via the native index.
   - **File(s):** `backend/app/retrieval/embeddings.py`.
-  - **Verification status:** Plumbing **verified live** with a deterministic stub
-    embedder (54 nodes embedded, 1536-d; exact-text query ranks node #1 @ score 1.0).
-    **The live OpenAI call is unverified — no API key in the build env.**
+  - **Verification status:** **Verified live with real OpenAI** (key via macOS
+    keychain → `.env`): 54 nodes embedded at 1536-d; semantic query "knee hurts after
+    lunges/squats" ranks Knee pain (0.891), the knee chat signal (0.826), then lunge
+    exercises. Stub run also confirmed index/cosine (exact-text → #1 @ 1.0).
 
 ---
 
 ## Build Plan Mapping
 - **Ticket:** P2-T1 — Embedder adapter + embedding of graph nodes
-  - **Status:** Complete (with a noted validation gap: live OpenAI call needs a key)
+  - **Status:** Complete (verified live with real OpenAI)
   - **What was completed:** Embedder seam, node embedding into the vector index, vector search.
-  - **Remaining work:** One real-key run to confirm semantic ranking; rebuild API image with `openai`.
+  - **Remaining work:** Rebuild API image with `openai` (when the API uses embeddings, P2-T3/P3).
 
 ---
 
 ## Validation
 - **Offline:** `compose_node_text` correct; `get_embedder()` raises a clear error
   without a key; `py_compile` clean.
-- **Live (stub embedder, OpenAI key absent):** 54 `:Embeddable` nodes embedded;
-  stored vectors length 1536; query with a node's exact composed text → that node
-  ranks **#1 at score 1.0** (index + cosine correct); `vector_search` returns k ranked results.
-- **Not run:** real OpenAI embedding call (no key).
+- **Live (real OpenAI):** 54 `:Embeddable` nodes embedded at 1536-d; semantic query
+  "my knee hurts after doing lunges and squats" → Knee pain (0.891), knee chat signal
+  (0.826), lunge/knee-drive exercises.
+- **Live (stub embedder):** query with a node's exact composed text → that node ranks
+  **#1 at score 1.0** (index + cosine correct).
 
 ---
 
