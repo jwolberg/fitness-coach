@@ -54,6 +54,22 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P5-T3 (one-command demo: Compose + frontend + seeding)
+
+- **`app/seed.py`** (one-shot): schema + exercises + Maya + signals + embeddings;
+  idempotent; seeds graph and skips embeddings with a clear warning if no key.
+- **Compose now has 4 services:** `neo4j` → `seed` (one-shot, `service_completed_
+  successfully` gate) → `api` → `frontend`. `exercises.json` mounted into seed via
+  volume (`EXERCISES_PATH=/data/exercises.json`); backend Dockerfile also copies
+  `data/` (Maya fixture).
+- **Frontend image = multi-stage** (node builds `expo export --platform web` → nginx
+  serves static `dist/`). `EXPO_PUBLIC_API_URL` baked at build (default
+  `http://localhost:8000`, the host-mapped API). Added `frontend/.dockerignore`.
+- **Validated end-to-end:** `docker compose up --build` from clean → neo4j healthy →
+  seed embedded 54 nodes & exited 0 → api `/health` 200 → frontend serves the built
+  bundle on :8081 → browser renders Maya's profile + coach panel → containerized
+  `POST /api/generate/workout` returns a safe workout (status ok, passed). Then `down`.
+
 ## 2026-06-02 — P5-T1 + P5-T2 (critical-path tests)
 
 - **Both required tests written together** (deterministic graph layer → no LLM/embeddings

@@ -99,7 +99,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 5 — Polish: Tests, One-Command Demo, README
-- **Current ticket:** P5-T3 (Phases 0-4 Complete; P5-T1, P5-T2 Complete — 7 tests pass)
+- **Current ticket:** P5-T4 — README (Phases 0-4 Complete; P5-T1/T2/T3 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
   Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
   /api/generate/workout, /api/explain (all verified live with real OpenAI).
@@ -415,7 +415,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Fresh `docker compose up` yields a working end-to-end demo at a URL
     (challenge "Dockerized local setup"; PRD §8, §15.1; ARCH §7).
   - Commit: one commit referencing P5-T3.
-  - Status: Todo
+  - Status: Complete (verified: `docker compose up --build` -> neo4j+seed+api+frontend;
+    seed embeds 54 nodes; demo renders at :8081 and generates a safe workout)
 - **P5-T4 — README incl. graph schema, API docs & production-evaluation section**
   - Objective: Write README covering overview, architecture, setup, run, tests,
     graph schema, API, synthetic data, example prompts, limitations, tradeoffs, and
