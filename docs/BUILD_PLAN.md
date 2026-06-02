@@ -98,9 +98,9 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
 - **Overall status:** In Progress
-- **Current phase:** Phase 0 — Project Scaffold & Infrastructure
-- **Current ticket:** P0-T2 (P0-T1 Complete)
-- **Blockers:** None
+- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Current ticket:** P1-T1 (Phase 0 Complete: P0-T1, P0-T2)
+- **Blockers:** None (follow-up: run live `docker compose up` once a Docker daemon is available — not exercised in the build environment)
 
 ---
 
@@ -135,7 +135,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: `docker compose up` brings up Neo4j + API; API opens a session
     (challenge "Requirements"; ARCH §7; PRD §8).
   - Commit: one commit referencing P0-T2.
-  - Status: Todo
+  - Status: Complete (compose config + startup-session logic validated; live
+    `docker compose up` pending a Docker daemon — see implementation-notes)
 
 ---
 
@@ -426,11 +427,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P0-T2 — Docker Compose + Neo4j service + env template.
-- **Why this is next:** P0-T1 (backend skeleton + `/health`) is Complete; P0-T2 is
-  its only dependent and the next link in the chain. It brings up Neo4j + the API
-  under Compose and connects the API to the graph on boot — the substrate every
-  Phase 1 ingestion/retrieval/safety ticket needs in order to be exercised.
+- **Start with:** P1-T1 — Graph schema, constraints & vector index.
+- **Why this is next:** Phase 0 is Complete (backend skeleton + Compose/Neo4j
+  substrate). P1-T1 depends on P0-T2 and is the first Phase 1 link: it defines the
+  node/edge labels, uniqueness constraints, and the Neo4j vector index that every
+  ingestion (P1-T2/T3/T4), retrieval (Phase 2), and safety (P1-T5) ticket builds on.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
