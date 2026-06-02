@@ -97,9 +97,9 @@ only — no real member/health data; no auth, billing, team admin; no medical
 advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
-- **Overall status:** Not Started
+- **Overall status:** In Progress
 - **Current phase:** Phase 0 — Project Scaffold & Infrastructure
-- **Current ticket:** P0-T1
+- **Current ticket:** P0-T2 (P0-T1 Complete)
 - **Blockers:** None
 
 ---
@@ -125,7 +125,7 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: `GET /health` → 200 locally (challenge "Dockerized local setup";
     ARCH §3.2).
   - Commit: one commit referencing P0-T1.
-  - Status: Todo
+  - Status: Complete
 - **P0-T2 — Docker Compose + Neo4j service + env template**
   - Objective: `docker-compose.yml` with `neo4j` (with vector-index-capable
     version) and `api`; `.env.example`; API connects to Neo4j on boot.
@@ -426,11 +426,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P0-T1 — Repo scaffold & backend skeleton.
-- **Why this is first:** Everything depends on a runnable backend skeleton and the
-  Compose/Neo4j substrate (P0-T2). Without the graph datastore reachable, no
-  ingestion, retrieval, or safety work can be exercised or validated. It is the
-  smallest step that unblocks the dependency chain and makes Phase 1 testable.
+- **Start with:** P0-T2 — Docker Compose + Neo4j service + env template.
+- **Why this is next:** P0-T1 (backend skeleton + `/health`) is Complete; P0-T2 is
+  its only dependent and the next link in the chain. It brings up Neo4j + the API
+  under Compose and connects the API to the graph on boot — the substrate every
+  Phase 1 ingestion/retrieval/safety ticket needs in order to be exercised.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

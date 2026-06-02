@@ -1,0 +1,3 @@
+# Backend dependencies (P0-T1: skeleton only — later tickets add neo4j, langgraph, etc.)
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
