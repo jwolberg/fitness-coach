@@ -30,9 +30,10 @@ class Settings:
     openai_api_key: str | None
     anthropic_api_key: str | None
 
-    # Embedding vector width — must match the model used by the Embedder (P2-T1) and
-    # the Neo4j vector index (P1-T1). Default 384 = sentence-transformers all-MiniLM-L6-v2
-    # (the local default); set to 1536 for OpenAI text-embedding-3-small.
+    # Embedding model + vector width — must match the Neo4j vector index (P1-T1).
+    # Per project decision, embeddings are OpenAI-only (no local fallback): the demo
+    # requires OPENAI_API_KEY. Default model text-embedding-3-small = 1536 dims.
+    embedding_model: str
     embedding_dim: int
 
 
@@ -44,8 +45,9 @@ def get_settings() -> Settings:
         neo4j_user=os.getenv("NEO4J_USER", "neo4j"),
         neo4j_password=os.getenv("NEO4J_PASSWORD", "password"),
         llm_provider=os.getenv("LLM_PROVIDER", "openai"),
-        embedding_provider=os.getenv("EMBEDDING_PROVIDER", "local"),
+        embedding_provider=os.getenv("EMBEDDING_PROVIDER", "openai"),
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-        embedding_dim=int(os.getenv("EMBEDDING_DIM", "384")),
+        embedding_model=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"),
+        embedding_dim=int(os.getenv("EMBEDDING_DIM", "1536")),
     )

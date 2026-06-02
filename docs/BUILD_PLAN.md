@@ -99,11 +99,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 2 — GraphRAG Retrieval
-- **Current ticket:** P2-T1 (Phase 0 & Phase 1 Complete)
-- **Blockers:** None. All shipped tickets verified live against `neo4j:5.26-community`.
-  Phase 1 done: schema/constraints/vector index; 50 exercises + Maya ingested; chat
-  signal structured; deterministic injury filter returns exactly the 21
-  contraindicated (knee-loading) exercises and a 9-exercise safe-candidate set.
+- **Current ticket:** P2-T2 (Phase 0 & Phase 1 Complete; P2-T1 Complete)
+- **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
+  fallback) — the demo now requires `OPENAI_API_KEY`; vector dim is 1536. P2-T1
+  plumbing verified live via a stub embedder (no key in build env); the real OpenAI
+  call still needs a one-time key run.
 
 ---
 
@@ -233,7 +233,10 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Nodes carry embeddings; vector similarity query returns ranked
     matches (PRD §7.5 step 1–2, §9 Retrieval step 2–3; ARCH §6).
   - Commit: one commit referencing P2-T1.
-  - Status: Todo
+  - Status: Complete (Embedder seam + node embedding into the vector index + vector
+    search; plumbing verified live via stub — 54 nodes @ 1536-d, exact-text query
+    ranks #1 @ 1.0). DEVIATION: OpenAI-only (no local), demo needs OPENAI_API_KEY;
+    live OpenAI call unverified (no key in build env).
 - **P2-T2 — GraphRAG retriever (vector + traversal + trace)**
   - Objective: Embed query → vector search → resolve to graph nodes → traverse
     safety-relevant neighborhood → exclude contraindicated → return compact
@@ -438,12 +441,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P2-T1 — Embedder adapter + embedding of graph nodes.
-- **Why this is next:** Phase 1 is complete — the graph is populated and the
-  deterministic injury filter works. Phase 2 adds the semantic half of GraphRAG:
-  P2-T1 introduces a provider/local `Embedder` adapter and writes embeddings onto the
-  `:Embeddable` nodes (signals, injuries, goals, exercises) into the vector index, so
-  P2-T2's retriever can combine vector search with the graph traversal.
+- **Start with:** P2-T2 — GraphRAG retriever (vector + traversal + trace).
+- **Why this is next:** The embedder + vector index (P2-T1) and the deterministic
+  injury filter (P1-T5) are both in place. P2-T2 combines them: embed the coach query
+  → vector search → resolve to graph nodes → traverse the safety-relevant
+  neighborhood → exclude contraindicated → return a compact context object + a
+  `graph_trace` (the GraphRAG core, feeding generation and explanation).
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user

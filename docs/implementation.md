@@ -749,3 +749,94 @@ the contraindicated-exercise set for the injured member. ✔ All verified live.
 - **Updated ticket status:** P1-T5 → Complete (Phase 1 Complete)
 - **Any blockers:** None
 - **Recommended next ticket:** P2-T1
+
+---
+---
+
+# Implementation — P2-T1
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket (starts Phase 2).
+- **Related phase:** Phase 2 — GraphRAG Retrieval
+- **Related ticket(s):** **P2-T1 — Embedder adapter + embedding of graph nodes**
+
+## Approach
+- **High-level strategy:** Add an `Embedder` seam, embed every `:Embeddable` node
+  into the Neo4j vector index, and expose a vector-search helper.
+- **Key decisions / DEVIATION:** **OpenAI-only embeddings (user-directed)** — no local
+  fallback; demo requires `OPENAI_API_KEY`. Overrides ARCH §6 / planning assumption.
+  Defaults: `text-embedding-3-small`, 1536-dim.
+- **Assumptions:** `:Embeddable` set = exercises, injuries, goals, signals (tagged in P1-T2/T3/T4).
+
+---
+
+## Implementation Plan
+1. Config: `EMBEDDING_PROVIDER=openai`, add `EMBEDDING_MODEL`, `EMBEDDING_DIM=1536`; `.env.example`.
+2. `requirements.txt`: add `openai`.
+3. `app/retrieval/embeddings.py`: `Embedder` protocol, `OpenAIEmbedder`, `get_embedder`,
+   `compose_node_text`, `embed_graph_nodes`, `vector_search`.
+
+**Files created:** `app/retrieval/__init__.py`, `app/retrieval/embeddings.py`.
+**Modified:** `app/config.py`, `.env.example`, `requirements.txt`.
+
+---
+
+## Code Changes
+
+### File: backend/app/retrieval/embeddings.py
+- **Change summary:** `Embedder` protocol + `OpenAIEmbedder` (lazy openai import,
+  missing-key guard); `compose_node_text` (pure); `embed_graph_nodes` writes vectors
+  via `db.create.setNodeVectorProperty`; `vector_search` via `db.index.vector.queryNodes`.
+
+### File: backend/app/config.py
+- **Change summary:** `embedding_provider` default → `openai`; added `embedding_model`
+  (`text-embedding-3-small`); `embedding_dim` default → 1536.
+
+### File: .env.example / requirements.txt
+- **Change summary:** Documented OpenAI-required embeddings + dim 1536; added `openai==2.40.0`.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Nodes carry embeddings; vector similarity query returns ranked
+  matches (PRD §7.5 step 1–2, §9 Retrieval step 2–3; ARCH §6).
+  - **Implementation:** `embed_graph_nodes()` writes a vector onto every `:Embeddable`
+    node; `vector_search()` returns ranked nodes via the native index.
+  - **File(s):** `backend/app/retrieval/embeddings.py`.
+  - **Verification status:** Plumbing **verified live** with a deterministic stub
+    embedder (54 nodes embedded, 1536-d; exact-text query ranks node #1 @ score 1.0).
+    **The live OpenAI call is unverified — no API key in the build env.**
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P2-T1 — Embedder adapter + embedding of graph nodes
+  - **Status:** Complete (with a noted validation gap: live OpenAI call needs a key)
+  - **What was completed:** Embedder seam, node embedding into the vector index, vector search.
+  - **Remaining work:** One real-key run to confirm semantic ranking; rebuild API image with `openai`.
+
+---
+
+## Validation
+- **Offline:** `compose_node_text` correct; `get_embedder()` raises a clear error
+  without a key; `py_compile` clean.
+- **Live (stub embedder, OpenAI key absent):** 54 `:Embeddable` nodes embedded;
+  stored vectors length 1536; query with a node's exact composed text → that node
+  ranks **#1 at score 1.0** (index + cosine correct); `vector_search` returns k ranked results.
+- **Not run:** real OpenAI embedding call (no key).
+
+---
+
+## Open Issues
+- **Known limitations / DEVIATION:** Demo requires `OPENAI_API_KEY` (no local embedder).
+  `EMBEDDING_DIM` is now 1536 → any old dim-384 index must be wiped (`down -v`) before re-seed.
+- **Blockers:** None (key needed only for a full live run).
+
+---
+
+## BUILD_PLAN Update (P2-T1)
+- **Current phase:** Phase 2 — GraphRAG Retrieval
+- **Current ticket:** P2-T2 — GraphRAG retriever (vector + traversal + trace) (next)
+- **Updated ticket status:** P2-T1 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P2-T2

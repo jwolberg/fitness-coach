@@ -54,6 +54,34 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P2-T1 (Embedder adapter + node embeddings)
+
+- **DEVIATION (user-directed) — OpenAI-only embeddings, no local fallback.** When
+  asked, the user chose "OpenAI only" over fastembed/sentence-transformers. This
+  OVERRIDES ARCH §6 and the BUILD_PLAN planning assumption ("local embedding fallback
+  so the demo runs without forcing one key"). **Consequence: the demo now REQUIRES
+  `OPENAI_API_KEY`** to run retrieval/generation. Config defaults changed:
+  `EMBEDDING_PROVIDER=openai`, `EMBEDDING_MODEL=text-embedding-3-small`,
+  `EMBEDDING_DIM=1536` (was 384). `.env.example` updated with a prominent note;
+  README (P5-T4) must call this out. The vector index is therefore created at dim 1536.
+- **`Embedder` protocol keeps the provider behind one seam** (`get_embedder()`),
+  so a local provider could be added later without touching the retriever.
+- **Node text = name + description/text + muscles + movement patterns** (`compose_node_text`,
+  pure) — richer text improves semantic matching. Exercises pull muscles/patterns via
+  edges; signals use `text`, injuries/goals use `description`.
+- **Vectors written via `db.create.setNodeVectorProperty`** (the idiomatic way to
+  populate a Neo4j vector index); `vector_search` uses `db.index.vector.queryNodes`.
+- **VALIDATION LIMIT — no OpenAI key in this env**, so the live OpenAI HTTP call is
+  **unverified**. Everything else verified against live Neo4j using a deterministic
+  hash **stub** embedder (1536-d): all **54** `:Embeddable` nodes embedded, stored
+  vectors are length 1536, and a query with a node's exact composed text ranks that
+  node **#1 at score 1.0** (proves the index + cosine path). `compose_node_text` and
+  the missing-key guard are unit-checked. Follow-up: run once with a real key
+  (`embed_graph_nodes()` + `vector_search`) to confirm semantic ranking; the API
+  Docker image also needs a rebuild to include `openai`.
+- **Note:** `EMBEDDING_DIM` change to 1536 means any pre-existing dim-384 vector index
+  must be dropped (wipe the Neo4j volume: `docker compose down -v`) before re-seeding.
+
 ## 2026-06-02 — P1-T5 (Deterministic injury-filter / contraindication module)
 
 - **All safety computed in Cypher, never the LLM** (ARCH §1, PRD §10). The core
