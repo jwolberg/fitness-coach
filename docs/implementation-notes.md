@@ -54,6 +54,29 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P1-T4 (Unstructured signal structuring)
+
+- **Deterministic extraction, not LLM.** A small keyword lexicon maps free text to
+  (a) injuries — a joint term co-occurring with a discomfort cue — and (b) goal foci.
+  Keeps Phase 1 runnable without a provider key; the LLM is reserved for generation
+  (P3, never on the safety path per ARCH §6). `extract_concepts` is pure/testable.
+- **Reconcile before create (no duplicate concepts).** A derived injury first looks
+  for an existing member injury affecting the same joint and links `MENTIONS_INJURY`
+  to it; only if none exists does it create a new `Injury (+AFFECTS_JOINT)`. So
+  Maya's chat ("knee felt weird...") links to the P1-T3 `maya-injury-knee` rather
+  than spawning a second knee injury (verified: injury count stays 1).
+- **Goals are linked, never fabricated.** `MENTIONS_GOAL` only attaches to a goal the
+  member already has (matched by `focus`); if none matches, it's skipped — honoring
+  the PRD's "do not invent" / "possible relationship" wording.
+- **ContextSignal tagged `:Embeddable`** (PRD §7.5 embeds signals; vector in P2-T1).
+- **Joint/goal lexicons use the canonical vocab** (`exercises.json` joints; the
+  `focus` values from the member fixture) so links resolve.
+- **Validation:** offline — `extract_concepts` returns `{knee},{lower_body}` for both
+  the PRD §7.4 example and Maya's text, and correctly yields no injury when no
+  discomfort cue is present. Live — ContextSignal (1) + HAS_CONTEXT_SIGNAL (1);
+  MENTIONS_INJURY → `maya-injury-knee`; MENTIONS_GOAL → `maya-goal-lower-body-strength`;
+  injury count unchanged (reconciled); idempotent over two runs.
+
 ## 2026-06-02 — P1-T3 (Synthetic member data + profile ingestion: Maya)
 
 - **Fixture at `backend/data/members/maya.json`** matching PRD §16 (goal, knee

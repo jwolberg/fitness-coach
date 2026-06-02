@@ -567,3 +567,93 @@
 - **Updated ticket status:** P1-T3 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P1-T4
+
+---
+---
+
+# Implementation — P1-T4
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket in order.
+- **Related phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Related ticket(s):** **P1-T4 — Unstructured signal structuring**
+
+## Approach
+- **High-level strategy:** Turn a free-text signal into a `ContextSignal` node and,
+  via deterministic keyword extraction, link `MENTIONS_INJURY`/`MENTIONS_GOAL`,
+  reconciling against existing member injuries (by joint) and goals (by focus).
+- **Key decisions:**
+  - Deterministic lexicon-based extraction (no LLM in Phase 1).
+  - Reconcile-then-create: link to an existing same-joint injury before making a new one.
+  - Goals are linked only if the member already has a matching-focus goal (no fabrication).
+  - `ContextSignal` tagged `:Embeddable`.
+- **Assumptions:** Signals come from the member fixture's `context_signals`.
+
+---
+
+## Implementation Plan
+1. `app/ingestion/signals.py` — `extract_concepts` (pure), `ingest_signal`,
+   `structure_member_signals`.
+2. Validate offline (extraction) + live (graph linking, reconciliation, idempotency).
+
+**Files created:** `app/ingestion/signals.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/ingestion/signals.py
+- **Change summary:** Keyword lexicons (joints, discomfort cues, goal foci);
+  `extract_concepts` derives injuries (joint+discomfort) and goal foci; ingestion
+  creates the `ContextSignal` (+`HAS_CONTEXT_SIGNAL`), reconciles/links
+  `MENTIONS_INJURY` (creating an `Injury`+`AFFECTS_JOINT` only if none exists), and
+  links `MENTIONS_GOAL` to an existing matching-focus goal.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Given the PRD §7.4 example input, the documented nodes/edges are
+  created and linked to the member (PRD §7.4, §9 step 7).
+  - **Implementation:** `ContextSignal` with raw text; `MENTIONS_INJURY` → knee injury
+    (→ `AFFECTS_JOINT` → `Joint{knee}`); `Member`→`HAS_CONTEXT_SIGNAL`; `MENTIONS_GOAL`
+    → lower-body goal.
+  - **File(s):** `backend/app/ingestion/signals.py`.
+  - **Verification status:** **Verified live** (results below).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P1-T4 — Unstructured signal structuring
+  - **Status:** Complete
+  - **What was completed:** Deterministic signal structuring with reconciliation,
+    verified against a live DB.
+  - **Remaining work:** None.
+
+---
+
+## Validation
+- **Offline:** `extract_concepts` → `{injury_joints:[knee], goal_foci:[lower_body]}`
+  for both the PRD §7.4 example and Maya's text; no injury when no discomfort cue; `py_compile` clean.
+- **Live:** after `apply_schema`+`ingest_exercises`+`ingest_member`+`structure_member_signals` (×2):
+  - ContextSignal 1; `HAS_CONTEXT_SIGNAL` 1; signal `:Embeddable`.
+  - `MENTIONS_INJURY` → `maya-injury-knee` (reconciled — injury count stays **1**, no dup).
+  - `MENTIONS_GOAL` → `maya-goal-lower-body-strength`.
+  - Idempotent over two runs.
+
+---
+
+## Open Issues
+- **Known limitations:** Extraction is lexicon-based (demo-grade); novel phrasings
+  outside the lexicon won't be captured. An LLM-assisted extractor could be added
+  later behind the same interface.
+- **Unresolved edge cases:** None for this scope.
+- **Blockers:** None.
+
+---
+
+## BUILD_PLAN Update (P1-T4)
+- **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
+- **Current ticket:** P1-T5 — Deterministic injury-filter (contraindication) module (next)
+- **Updated ticket status:** P1-T4 → Complete
+- **Any blockers:** None
+- **Recommended next ticket:** P1-T5

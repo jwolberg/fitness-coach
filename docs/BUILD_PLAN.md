@@ -99,9 +99,10 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 ## Current Status
 - **Overall status:** In Progress
 - **Current phase:** Phase 1 — Core Graph, Ingestion & Deterministic Safety
-- **Current ticket:** P1-T4 (Complete: P0-T1, P0-T2, P1-T1, P1-T2, P1-T3)
+- **Current ticket:** P1-T5 (Complete: P0-T1, P0-T2, P1-T1, P1-T2, P1-T3, P1-T4)
 - **Blockers:** None. All shipped tickets verified live against `neo4j:5.26-community`.
-  Maya ingested; the `Member→Injury→Joint←Exercise` traversal returns 21
+  Maya ingested; her chat signal is structured (links to the existing knee injury +
+  lower-body goal); the `Member→Injury→Joint←Exercise` traversal returns 21
   contraindicated (knee-loading) exercises.
 
 ---
@@ -196,7 +197,9 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Given the PRD §7.4 example input, the documented nodes/edges are
     created and linked to the member (PRD §7.4, §9 step 7).
   - Commit: one commit referencing P1-T4.
-  - Status: Todo
+  - Status: Complete (verified live: ContextSignal + HAS_CONTEXT_SIGNAL;
+    MENTIONS_INJURY reconciled to existing knee injury — no duplicate; MENTIONS_GOAL
+    to lower-body goal; deterministic extraction, idempotent)
 - **P1-T5 — Deterministic injury-filter (contraindication) module**
   - Objective: Cypher-backed function returning the contraindicated exercise set
     for a member via `Member→Injury→Joint←Exercise`; also equipment filtering.
@@ -434,12 +437,12 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P1-T4 — Unstructured signal structuring.
-- **Why this is next:** Maya's structured profile is in the graph (P1-T3), and her
-  fixture already carries the raw chat signal. P1-T4 turns that free text into a
-  `ContextSignal` node plus `MENTIONS_INJURY`/`MENTIONS_GOAL` edges — demonstrating
-  the "raw signal → structured graph" capability (challenge "Ingestion") and feeding
-  the semantic side of GraphRAG retrieval (Phase 2).
+- **Start with:** P1-T5 — Deterministic injury-filter (contraindication) module.
+- **Why this is next:** All Phase 1 ingestion is done and the
+  `Member→Injury→Joint←Exercise` data path is proven (21 knee exercises resolve).
+  P1-T5 packages that traversal as a reusable, deterministic function (plus equipment
+  filtering) in `app/safety/validator.py` — the core safety guarantee that retrieval
+  (P2-T2) and the safety validator (P3-T2) both build on.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
