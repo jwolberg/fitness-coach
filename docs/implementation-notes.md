@@ -54,6 +54,25 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — P3-T5 (/api/generate/workout + /api/explain + structured logging)
+
+- **Endpoints match PRD §7.9:** `/api/generate/workout` → `{workout, explanation,
+  safety_validation, status}` (safety_validation = {passed, issues, repaired,
+  used_fallback}); `/api/explain` → `{answer, graph_trace}`. Both 404 on unknown member.
+- **`workout` left as an open dict in the response envelope** — the LLM output shape
+  varies; typing the envelope (and `safety_validation`) gives the typed contract
+  without 500s from schema drift. PRD §7.9 shows `workout` as `{}` anyway.
+- **`/api/explain` retrieves fresh context** using the question as the query (no
+  recommendation store), then runs the deterministic builder. `recommendation_id` is
+  accepted per §7.9 but unused (noted) — there's no persistence layer in scope.
+- **Structured logging (PRD §13):** `app/observability/logging.py` emits JSON-line
+  events; the API logs `generate.request`/`generate.result` (with status, #exercises,
+  #safe, #excluded, passed/repaired/used_fallback) and `explain.request`/`explain.result`.
+  Retriever/generator/validator also log via their module loggers.
+- **Validation (live, TestClient + real OpenAI):** generate → 200 with the full §7.9
+  shape, passed=True, status ok; explain → 200 with the exclusion chain + 3-triple
+  trace; 404 on unknown member; all four structured events captured. **Phase 3 done.**
+
 ## 2026-06-02 — P3-T4 (LangGraph orchestration pipeline + thin-context recovery)
 
 - **Added `langgraph==1.2.4`.** `StateGraph` over a typed `PipelineState` wires

@@ -1336,3 +1336,87 @@ contraindicated exercises excluded; `/api/member/:id/graph` returns the neighbor
 - **Updated ticket status:** P3-T4 → Complete
 - **Any blockers:** None
 - **Recommended next ticket:** P3-T5
+
+---
+---
+
+# Implementation — P3-T5
+
+## Scope Implemented
+- **Requested scope:** "keep going" → next ticket (completes Phase 3).
+- **Related phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
+- **Related ticket(s):** **P3-T5 — `/api/generate/workout` + `/api/explain` endpoints & schemas**
+
+## Approach
+- **Strategy:** Expose the pipeline + explanation builder as typed endpoints (PRD §7.9)
+  and add request-level structured logging (PRD §13).
+- **Key decisions:** Typed envelope with open `workout` dict; `/api/explain` retrieves
+  fresh context; JSON-line event logger.
+
+---
+
+## Implementation Plan
+1. `app/observability/logging.py` — `log_event`.
+2. `app/api/schemas.py` — generate/explain request+response models.
+3. `app/api/routes.py` — `POST /api/generate/workout`, `POST /api/explain`.
+
+**Files created:** `app/observability/__init__.py`, `app/observability/logging.py`.
+**Modified:** `app/api/schemas.py`, `app/api/routes.py`.
+
+---
+
+## Code Changes
+
+### File: backend/app/api/routes.py
+- **Change summary:** `api_generate_workout` (runs the pipeline; logs request/result;
+  returns §7.9 shape) and `api_explain` (retrieve + explain; logs; returns {answer,
+  graph_trace}); both 404 on unknown member.
+
+### File: backend/app/api/schemas.py
+- **Change summary:** `GenerateWorkoutRequest/Response`, `SafetyValidation`,
+  `ExplainRequest/Response`.
+
+### File: backend/app/observability/logging.py
+- **Change summary:** `log_event` JSON-line structured logger.
+
+---
+
+## Acceptance Criteria Mapping
+- **Criterion:** Responses match PRD §7.9 shapes incl. `safety_validation`; structured
+  logs emitted (PRD §7.9, §13).
+  - **Implementation:** typed endpoints + `log_event` calls.
+  - **File(s):** `backend/app/api/routes.py`, `schemas.py`, `observability/logging.py`.
+  - **Verification status:** **Verified live** (TestClient + real OpenAI).
+
+---
+
+## Build Plan Mapping
+- **Ticket:** P3-T5 — endpoints & schemas
+  - **Status:** Complete
+  - **What was completed:** generate/explain endpoints + structured logging, verified live.
+  - **Remaining work:** None. **Phase 3 exit criteria met.**
+
+---
+
+## Validation
+- **Live (TestClient, real OpenAI):** `/api/generate/workout` → 200, keys
+  `{workout, explanation, safety_validation, status}`, passed=True, status ok;
+  `/api/explain` → 200, `{answer, graph_trace}` (exclusion chain, trace 3); 404 on
+  unknown member; structured events `generate.request/result`, `explain.request/result` emitted.
+- `py_compile` clean.
+
+---
+
+## Phase 3 Exit Criteria (met)
+`/api/generate/workout` returns workout + explanation + safety_validation;
+`/api/explain` returns a graph-grounded answer; the LangGraph pipeline wires
+retrieve→generate→validate→explain with deterministic repair/fallback. ✔
+
+---
+
+## BUILD_PLAN Update (P3-T5)
+- **Current phase:** Phase 4 — Frontend Demo UX
+- **Current ticket:** P4-T1 — Expo / RN Web scaffold + API client (next)
+- **Updated ticket status:** P3-T5 → Complete (Phase 3 Complete)
+- **Any blockers:** None
+- **Recommended next ticket:** P4-T1

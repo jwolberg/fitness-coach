@@ -72,3 +72,40 @@ class GraphEdge(BaseModel):
 class MemberGraphResponse(BaseModel):
     nodes: list[GraphNode] = Field(default_factory=list)
     edges: list[GraphEdge] = Field(default_factory=list)
+
+
+# --- /api/generate/workout -------------------------------------------------------
+
+
+class GenerateWorkoutRequest(BaseModel):
+    member_id: str
+    query: str
+
+
+class SafetyValidation(BaseModel):
+    passed: bool
+    issues: list[dict[str, Any]] = Field(default_factory=list)
+    repaired: bool = False
+    used_fallback: bool = False
+
+
+class GenerateWorkoutResponse(BaseModel):
+    # workout content is left open (LLM output shape varies); the envelope is typed.
+    workout: dict[str, Any]
+    explanation: dict[str, Any]
+    safety_validation: SafetyValidation
+    status: str | None = None
+
+
+# --- /api/explain ----------------------------------------------------------------
+
+
+class ExplainRequest(BaseModel):
+    member_id: str
+    question: str
+    recommendation_id: str | None = None  # accepted per PRD §7.9; not persisted (no rec store)
+
+
+class ExplainResponse(BaseModel):
+    answer: str
+    graph_trace: list[GraphTraceEntry] = Field(default_factory=list)

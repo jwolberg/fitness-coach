@@ -98,9 +98,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 
 ## Current Status
 - **Overall status:** In Progress
-- **Current phase:** Phase 3 — Generation, Safety Validation, Explanation & Orchestration
-- **Current ticket:** P3-T5 (Phases 0, 1, 2 Complete; P3-T1..T4 Complete)
+- **Current phase:** Phase 4 — Frontend Demo UX
+- **Current ticket:** P4-T1 (Phases 0, 1, 2, 3 Complete)
 - **Note:** generate latency ≈7.5s (> ~5s PRD target) — follow-up optimization.
+  Backend API complete: /health, /api/retrieve, /api/member/:id/graph,
+  /api/generate/workout, /api/explain (all verified live with real OpenAI).
 - **Blockers:** None. **Decision/deviation:** embeddings are OpenAI-only (no local
   fallback) — the demo requires `OPENAI_API_KEY` (now in `.env` via macOS keychain);
   vector dim is 1536. P2-T1 verified live with REAL OpenAI (54 nodes embedded;
@@ -332,7 +334,8 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
   - Acceptance: Responses match PRD §7.9 shapes incl. `safety_validation`;
     structured logs emitted (PRD §7.9, §13; challenge "API").
   - Commit: one commit referencing P3-T5.
-  - Status: Todo
+  - Status: Complete (verified live via TestClient: generate returns workout+explanation
+    +safety_validation; explain returns answer+graph_trace; JSON-line events emitted; 404s)
 
 ---
 
@@ -449,11 +452,11 @@ advice; no exercise coverage beyond `exercises.json`; demo-grade frontend only.
 22. P5-T4 — README + production-evaluation section
 
 ## Recommended Next Step
-- **Start with:** P3-T5 — `/api/generate/workout` + `/api/explain` endpoints & schemas.
-- **Why this is next:** The orchestration pipeline (P3-T4) and explanation builder
-  (P3-T3) are ready. P3-T5 exposes them as typed endpoints returning the PRD §7.9
-  shapes (workout + explanation + safety_validation; answer + graph_trace) and adds
-  structured logging (PRD §13) — completing Phase 3 and the backend API surface.
+- **Start with:** P4-T1 — Expo / RN Web scaffold + API client.
+- **Why this is next:** The backend API is complete and verified. Phase 4 builds the
+  demo client: P4-T1 scaffolds an Expo app configured for React Native Web with a typed
+  API client to the backend — the foundation the member/context view (P4-T2) and the
+  query→workout→why view (P4-T3) render on.
 
 ## Deferred / Out of Scope
 **Non-goals (PRD §4; challenge "Data"):** real member/health data; auth & user
