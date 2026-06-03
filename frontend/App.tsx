@@ -1,17 +1,28 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { colors } from './src/components/ui';
-import { CoachPanel } from './src/screens/CoachPanel';
+import { ChatPanel } from './src/screens/ChatPanel';
 import { MemberScreen } from './src/screens/MemberScreen';
 
-// One strong synthetic member (PRD §16, depth over breadth). The selector is built
-// to take more members later.
+// One strong synthetic member (PRD §16, depth over breadth). Selector takes more later.
 const MEMBERS = [{ id: 'maya', name: 'Maya' }];
 
 export default function App() {
   const [memberId, setMemberId] = useState(MEMBERS[0].id);
+  const { width } = useWindowDimensions();
+  const twoCol = width >= 900;
+
+  const context = (
+    <ScrollView style={styles.colScroll} contentContainerStyle={styles.colContent}>
+      <Text style={styles.colHeading}>Member context</Text>
+      <MemberScreen memberId={memberId} />
+    </ScrollView>
+  );
+
+  // Chat is keyed by member so switching members resets the conversation.
+  const chat = <ChatPanel key={memberId} memberId={memberId} />;
 
   return (
     <View style={styles.app}>
@@ -29,10 +40,10 @@ export default function App() {
         </View>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <MemberScreen memberId={memberId} />
-        <CoachPanel memberId={memberId} />
-      </ScrollView>
+      <View style={[styles.body, { flexDirection: twoCol ? 'row' : 'column' }]}>
+        <View style={[styles.col, styles.chatCol, twoCol ? styles.dividerRight : styles.dividerBottom]}>{chat}</View>
+        <View style={[styles.col, styles.ctxCol]}>{context}</View>
+      </View>
       <StatusBar style="auto" />
     </View>
   );
@@ -45,7 +56,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     paddingHorizontal: 20,
-    paddingTop: 18,
+    paddingTop: 16,
     paddingBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -59,6 +70,14 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: colors.accent, borderColor: colors.accent },
   tabText: { color: colors.text, fontWeight: '600' },
   tabTextActive: { color: '#fff' },
-  scroll: { flex: 1 },
-  content: { padding: 20, maxWidth: 760, width: '100%', alignSelf: 'center' },
+
+  body: { flex: 1, minHeight: 0 },
+  col: { flex: 1, minHeight: 0 },
+  chatCol: { flex: 1.2 },
+  ctxCol: { backgroundColor: colors.bg },
+  dividerRight: { borderRightWidth: 1, borderRightColor: colors.border },
+  dividerBottom: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  colScroll: { flex: 1 },
+  colContent: { padding: 20, maxWidth: 640, width: '100%', alignSelf: 'center' },
+  colHeading: { fontSize: 13, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 },
 });

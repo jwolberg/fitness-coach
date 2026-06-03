@@ -54,6 +54,25 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — UX: two-column layout (chat + live context)
+
+- **Redesigned the app into two columns** (post-build UX request): a **chat interface**
+  (left) and the **member context** (right), responsive — side-by-side ≥900px, stacked
+  below. Each column scrolls independently.
+- **New `ChatPanel`** replaces `CoachPanel`: a conversational UI (user/assistant
+  bubbles, suggestion chips, input + Send). Free text is routed — workout-building
+  verbs → `/api/generate/workout` (rendered inline via `WorkoutView`), question/why
+  words → `/api/explain` (answer + graph-evidence trace). Deleted `CoachPanel.tsx`.
+- **Validated in browser:** generate and "why?" both work as chat turns; backend logged
+  `POST /api/generate/workout 200` + `POST /api/explain 200`. tsc clean.
+- **Local-run gotchas hit while validating (env, not code):** (1) RN Web Metro caches
+  the bundle — needed to free port 8081 from a stale dev server and restart with
+  `--clear`; (2) the local API resolved `localhost` to IPv6 `::1` but the Neo4j
+  container listens on IPv4 → use `NEO4J_URI=bolt://127.0.0.1:7687` for host-run uvicorn
+  (Docker is unaffected; it uses `bolt://neo4j:7687`); (3) a Starlette 500 is emitted
+  outside CORS, so a backend error surfaces in the browser as "Failed to fetch" — the
+  underlying cause was Neo4j connectivity, fixed by the IPv4 URI + a Docker restart.
+
 ## 2026-06-02 — P5-T4 (README incl. graph schema, API docs & production-eval)
 
 - **README.md** covers all 12 PRD §14 items (overview, architecture, setup, run,
