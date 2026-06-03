@@ -54,6 +54,22 @@ Running log of decisions/deviations/tradeoffs during the build. For human review
   `/health` → 200 with the graph unreachable. **`docker compose up` itself is
   unverified end-to-end** — should be run once the daemon is available.
 
+## 2026-06-02 — UX: bigger text, iMessage chat, consumer font
+
+- **Consumer-friendly font (Poppins)** loaded once on web (Google Fonts) and applied
+  globally via an injected `* { font-family: … !important }` rule (in `ui.tsx`) so it
+  overrides react-native-web's atomic font-family classes on every element.
+- **All text ~2×** — doubled the `fontSize`/`lineHeight` literals across `ui.tsx`,
+  `App.tsx`, `MemberScreen.tsx`, `WorkoutView.tsx`, `ChatPanel.tsx` (e.g. body 15→30,
+  member name 24→44, section titles 13→24); bumped a few paddings/maxWidths so the
+  larger text isn't cramped.
+- **iMessage-style chat:** white background; sent bubbles blue (`#007aff`, white text,
+  tightened bottom-right corner), received bubbles gray (`#e9e9eb`, black text,
+  tightened bottom-left); rounded ~26px; a pill text input ("iMessage" placeholder)
+  with a circular blue ↑ send button; blue suggestion chips.
+- **Validated in browser:** Poppins applied, text doubled, iMessage bubbles + input
+  render; generate and "why?" flows still work as chat turns. tsc clean.
+
 ## 2026-06-02 — UX: two-column layout (chat + live context)
 
 - **Redesigned the app into two columns** (post-build UX request): a **chat interface**

@@ -93,15 +93,15 @@ export function ChatPanel({ memberId }: { memberId: string }) {
         <TextInput
           value={input}
           onChangeText={setInput}
-          placeholder="Ask the coach…"
-          placeholderTextColor={colors.muted}
+          placeholder="iMessage"
+          placeholderTextColor="#a3a3a8"
           style={styles.input}
           editable={!busy}
           onSubmitEditing={() => send(input)}
           returnKeyType="send"
         />
         <Pressable onPress={() => send(input)} disabled={busy || !input.trim()} style={[styles.send, (busy || !input.trim()) && styles.sendDisabled]}>
-          <Text style={styles.sendText}>Send</Text>
+          <Text style={styles.sendArrow}>↑</Text>
         </Pressable>
       </View>
     </View>
@@ -121,11 +121,12 @@ function MessageBubble({ m }: { m: Msg }) {
 
   // assistant
   let body: React.ReactNode;
+  let plain = true;
   if (m.kind === 'loading') {
     body = (
       <View style={styles.loadingRow}>
-        <ActivityIndicator color={colors.accent} />
-        <Text style={styles.loadingText}>thinking…</Text>
+        <ActivityIndicator color={colors.muted} />
+        <Text style={styles.loadingText}>typing…</Text>
       </View>
     );
   } else if (m.kind === 'text') {
@@ -133,9 +134,9 @@ function MessageBubble({ m }: { m: Msg }) {
   } else if (m.kind === 'error') {
     body = <Text style={styles.errorText}>{m.text}</Text>;
   } else if (m.kind === 'workout') {
+    plain = false;
     body = <WorkoutView result={m.result} />;
   } else {
-    // explanation
     body = (
       <View>
         <Text style={styles.assistantText}>{m.answer.answer}</Text>
@@ -154,38 +155,42 @@ function MessageBubble({ m }: { m: Msg }) {
     );
   }
 
-  const wide = m.kind === 'workout';
   return (
     <View style={[styles.row, styles.rowStart]}>
-      <View style={[styles.bubble, styles.assistantBubble, wide && styles.assistantWide]}>{body}</View>
+      <View style={plain ? [styles.bubble, styles.assistantBubble] : styles.cardWrap}>{body}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  panel: { flex: 1, backgroundColor: colors.bg },
+  panel: { flex: 1, backgroundColor: '#ffffff' },
   messages: { flex: 1 },
-  messagesInner: { padding: 16, gap: 10 },
+  messagesInner: { padding: 18, gap: 6 },
   row: { flexDirection: 'row' },
   rowEnd: { justifyContent: 'flex-end' },
   rowStart: { justifyContent: 'flex-start' },
-  bubble: { maxWidth: '88%', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 13 },
-  userBubble: { backgroundColor: colors.accent, borderBottomRightRadius: 4 },
-  userText: { color: '#fff', fontSize: 15, lineHeight: 21 },
-  assistantBubble: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderBottomLeftRadius: 4 },
-  assistantWide: { maxWidth: '98%', width: '98%', padding: 0, borderWidth: 0, backgroundColor: 'transparent' },
-  assistantText: { color: colors.text, fontSize: 15, lineHeight: 21 },
-  errorText: { color: colors.danger, fontSize: 14 },
-  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  loadingText: { color: colors.muted, fontStyle: 'italic' },
-  traceHead: { fontSize: 11, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', marginTop: 10, marginBottom: 5 },
-  trace: { color: colors.muted, fontSize: 12, fontFamily: 'monospace', marginBottom: 2 },
-  suggestions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
-  suggestion: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, borderRadius: 16, paddingVertical: 6, paddingHorizontal: 11, maxWidth: '100%' },
-  suggestionText: { color: colors.accent, fontSize: 12, fontWeight: '600' },
-  inputBar: { flexDirection: 'row', gap: 8, padding: 12, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.card },
-  input: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15, color: colors.text, backgroundColor: '#fff' },
-  send: { backgroundColor: colors.accent, borderRadius: 10, paddingHorizontal: 18, justifyContent: 'center' },
-  sendDisabled: { opacity: 0.5 },
-  sendText: { color: '#fff', fontWeight: '700' },
+
+  // iMessage bubbles
+  bubble: { maxWidth: '80%', borderRadius: 26, paddingVertical: 12, paddingHorizontal: 20, marginVertical: 3 },
+  userBubble: { backgroundColor: colors.imessageBlue, borderBottomRightRadius: 8 },
+  userText: { color: '#ffffff', fontSize: 30, lineHeight: 40 },
+  assistantBubble: { backgroundColor: colors.imessageGray, borderBottomLeftRadius: 8 },
+  assistantText: { color: '#000000', fontSize: 30, lineHeight: 40 },
+  errorText: { color: colors.danger, fontSize: 28, lineHeight: 38 },
+  cardWrap: { maxWidth: '98%', width: '98%', marginVertical: 4 },
+
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  loadingText: { color: colors.muted, fontStyle: 'italic', fontSize: 28 },
+  traceHead: { fontSize: 22, fontWeight: '700', color: colors.muted, textTransform: 'uppercase', marginTop: 14, marginBottom: 8 },
+  trace: { color: colors.muted, fontSize: 24, fontFamily: 'monospace', marginBottom: 4 },
+
+  suggestions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 18, paddingBottom: 10 },
+  suggestion: { borderWidth: 1, borderColor: colors.imessageBlue, backgroundColor: '#ffffff', borderRadius: 24, paddingVertical: 8, paddingHorizontal: 16, maxWidth: '100%' },
+  suggestionText: { color: colors.imessageBlue, fontSize: 22, fontWeight: '600' },
+
+  inputBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: '#ffffff' },
+  input: { flex: 1, borderWidth: 1, borderColor: '#d6d6db', borderRadius: 28, paddingHorizontal: 22, paddingVertical: 14, fontSize: 28, color: colors.text, backgroundColor: '#ffffff' },
+  send: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.imessageBlue, alignItems: 'center', justifyContent: 'center' },
+  sendDisabled: { backgroundColor: '#bcd9ff' },
+  sendArrow: { color: '#ffffff', fontSize: 32, fontWeight: '800', lineHeight: 36 },
 });
