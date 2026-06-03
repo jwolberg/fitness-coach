@@ -17,6 +17,8 @@ A coach can:
 | "Why did you skip barbell squats?" | Explains via graph relationships: `Member → has injury → Knee pain → affects joint → knee ← loads joint ← Exercise`. |
 | "What should I watch for?" | Surfaces adherence trend, flagged injuries, stated goals, recent signals. |
 
+![Knowledge Graph Coaching — chat interface with live member context](docs/img/preview.png)
+
 ---
 
 ## 1. Project overview
